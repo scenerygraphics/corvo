@@ -130,4 +130,6 @@ dmypy.json
 ToDo.txt
 .idea
 
-.h5ad
+*.h5ad
+*.zarr
+*.csv
