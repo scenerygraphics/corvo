@@ -20,6 +20,26 @@ class FileConverter:
 
         # adding csc layer
         adata.layers["X_csc"] = adata.X.tocsc()
+
+        # saving categoricals
+        category_names = ["FACS.selection",
+                          "age",
+                          "cell_ontology_class",
+                          "cell_ontology_id",
+                          "free_annotation",
+                          "method",
+                          "mouse.id",
+                          "sex",
+                          "subtissue",
+                          "tissue"
+                          ]
+
+        for obs in range(0, 10):
+            sub_cat = []
+            for category in adata.obs[category_names[obs]].cat.categories:
+                sub_cat.append(category)
+            adata.uns[category_names[obs] + "_categorical"] = sub_cat
+
         adata.write(results_file)
 
         # FileConverterTest2D(original_file, results_file)
