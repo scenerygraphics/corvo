@@ -10,7 +10,7 @@ class SelectionsToCSV:
 
         adata = sc.read_h5ad(file_path)
 
-        adata.write_csvs(dirname=export_folder, skip_data=True, sep="+")  # write all annotations to csv
+        adata.write_csvs(dirname=export_folder, skip_data=True, sep=",")  # write all annotations to csv
         umap_df = pd.DataFrame(adata.obsm["X_umap"])
         umap_df.to_csv(export_folder + "/obsm.csv")  # overwrite obsm with only 3d umap
 
