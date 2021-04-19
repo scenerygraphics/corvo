@@ -1,18 +1,14 @@
 import scanpy as sc
 from file_conversion.test.file_converter_test_2d import FileConverterTest2D
-from selections_to_csv import SelectionsToCSV
+from file_conversion.selections_to_csv import SelectionsToCSV
 
 
 class FileConverter:
     """
 """
     def __init__(self):
-        original_file = "file_conversion/tabula-muris-senis-droplet-processed-official-annotations-Mammary_Gland.h5ad"
-        results_file = "file_conversion/mammary_gland_vr_processed.h5ad"
-        # marrow_file = "file_conversion/tabula-muris-senis-droplet-processed-official-annotations-Marrow.h5ad"
-        # marrow_results_file = "file_conversion/marrow_vr_processed.h5ad"
-        # full_file = "file_conversion/tabula-muris-senis-facs-processed-official-annotations.h5ad"
-        # full_results_file = "file_conversion/tabula_vr_processed.h5ad"
+        original_file = "original_file_name"
+        results_file = "vr_processed.h5ad"
 
         # file to add 3d umap to
         adata = sc.read_h5ad(original_file)
