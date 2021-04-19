@@ -133,3 +133,5 @@ ToDo.txt
 *.h5ad
 *.zarr
 *.csv
+
+test_runner.py
