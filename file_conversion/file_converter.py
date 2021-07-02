@@ -1,12 +1,15 @@
+#!/usr/bin/env python3
+
 import scanpy as sc
+import sys
 
 
 class FileConverter:
     """
 """
     def __init__(self):
-        original_file = "tabula-muris-senis-droplet-processed-official-annotations-Marrow.h5ad"
-        results_file = "marrow_vr_processed.h5ad"
+        original_file = sys.argv[1]
+        results_file = sys.argv[1].rstrip(".h5ad") + "_vr_processed.h5ad"
 
         # file to add 3d umap to
         adata = sc.read_h5ad(original_file)
