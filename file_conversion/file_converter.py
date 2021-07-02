@@ -1,14 +1,12 @@
 import scanpy as sc
-from file_conversion.test.file_converter_test_2d import FileConverterTest2D
-from file_conversion.selections_to_csv import SelectionsToCSV
 
 
 class FileConverter:
     """
 """
     def __init__(self):
-        original_file = "original_file_name"
-        results_file = "vr_processed.h5ad"
+        original_file = "tabula-muris-senis-droplet-processed-official-annotations-Marrow.h5ad"
+        results_file = "marrow_vr_processed.h5ad"
 
         # file to add 3d umap to
         adata = sc.read_h5ad(original_file)
@@ -23,8 +21,8 @@ class FileConverter:
 
         sc.tl.umap(adata, n_components=3)
 
-        # adding csc layer
-        adata.layers["X_csc"] = adata.X.tocsc()
+        # making X sparse in csc format
+        adata.X = adata.X.tocsc()
 
         # saving categoricals as ordered lists (effectively maps)
         for i in adata.var_keys():
