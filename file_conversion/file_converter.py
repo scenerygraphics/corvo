@@ -7,6 +7,7 @@ import sys
 class FileConverter:
     """
 """
+
     def __init__(self):
         original_file = sys.argv[1]
         results_file = sys.argv[1].rstrip(".h5ad") + "_vr_processed.h5ad"
@@ -14,31 +15,30 @@ class FileConverter:
         # file to add 3d umap to
         adata = sc.read_h5ad(original_file)
 
+        n_genes = 10
         for observation in adata.obs:
             try:
-                sc.tl.rank_genes_groups(adata, groupby=observation, n_genes=10, method='wilcoxon', use_raw=True)
+                sc.tl.rank_genes_groups(adata, groupby=observation, n_genes=n_genes, method='wilcoxon', use_raw=True)
 
-                names_list = []
-                for rank in adata.uns["rank_genes_groups"]["names"]:
-                    for name in rank:
-                         names_list.append(name)
+                names_list = [0] * adata.obs[observation].cat.categories.size * n_genes
+                pvals_list = [0] * adata.obs[observation].cat.categories.size * n_genes
+                logfoldchanges_list = [0] * adata.obs[observation].cat.categories.size * n_genes
 
-                adata.uns[(observation + "_names")] = names_list
+                for cat in [["names", names_list], ["pvals", pvals_list], ["logfoldchanges", logfoldchanges_list]]:
 
-                pvals_list = []
-                for rank in adata.uns["rank_genes_groups"]["pvals"]:
-                    for pval in rank:
-                        pvals_list.append(pval)
+                    rank_counter = 0
+                    for rank in adata.uns["rank_genes_groups"][cat[0]]:  # rank is list of 1st, 2nd, 3d most expr etc
+                        name_counter = 0
 
-                adata.uns[(observation + "_pvals")] = pvals_list
+                        for index in rank:
+                            cat[1][(name_counter * n_genes) + rank_counter] = index
+                            name_counter += 1
 
-                logfoldchanges_list = []
-                for rank in adata.uns["rank_genes_groups"]["logfoldchanges"]:
-                    for logfoldchange in rank:
-                        logfoldchanges_list.append(logfoldchange)
+                        rank_counter += 1
 
-                adata.uns[(observation + "_logfoldchanges")] = logfoldchanges_list
+                    adata.uns[(observation + "_" + cat[0])] = cat[1]
 
+            # pass for any obs that do not cluster
             except (AttributeError, ValueError, ZeroDivisionError):
                 pass
 
@@ -73,4 +73,3 @@ class FileConverter:
 
 if __name__ == "__main__":
     FileConverter()
-
