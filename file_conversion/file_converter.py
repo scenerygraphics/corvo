@@ -15,11 +15,12 @@ class FileConverter:
         # file to add 3d umap to
         adata = sc.read_h5ad(original_file)
 
+        # will fail for obs with only one category or when a category has only one data point
         n_genes = 10
         for observation in adata.obs:
             try:
-                sc.tl.rank_genes_groups(adata, groupby=observation, n_genes=n_genes, method='wilcoxon', use_raw=True)
-
+                sc.tl.rank_genes_groups(adata, groupby=observation, n_genes=n_genes, method='t-test', use_raw=True)
+                print("success: " + observation)
                 names_list = [0] * adata.obs[observation].cat.categories.size * n_genes
                 pvals_list = [0] * adata.obs[observation].cat.categories.size * n_genes
                 logfoldchanges_list = [0] * adata.obs[observation].cat.categories.size * n_genes
@@ -40,6 +41,7 @@ class FileConverter:
 
             # pass for any obs that do not cluster
             except (AttributeError, ValueError, ZeroDivisionError):
+                print("fail: " + observation)
                 pass
 
         adata.uns["rank_genes_groups"] = []
