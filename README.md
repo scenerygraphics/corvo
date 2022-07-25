@@ -9,7 +9,7 @@ Install Anaconda here: https://www.anaconda.com/distribution/
 
 ### Clone Repository
 ```
-git clone https://github.com/royerlab/CorvoLauncher.git
+git clone https://github.com/ljjh20/CorvoLauncher.git
 ```
 
 ### Create Conda Environment and Install Dependencies
