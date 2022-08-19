@@ -3,7 +3,8 @@
 import scanpy as sc
 import sys
 
-
+# https://cellxgene.cziscience.com/collections/0b9d8a04-bb9d-44da-aa27-705bb65b54eb
+# https://figshare.com/articles/dataset/Tabula_Muris_Senis_Data_Objects/12654728
 class FileConverter:
     """
 """
@@ -59,17 +60,7 @@ class FileConverter:
 
         # making X sparse in csc format
         adata.X = adata.X.tocsc()
-
-        # saving categoricals as ordered lists (effectively maps)
-        for i in adata.obs_keys():
-            try:
-                sub_cat = []
-                for category in adata.obs[i].cat.categories:
-                    sub_cat.append(category)
-                adata.uns[i + "_categorical"] = sub_cat
-            except AttributeError:
-                pass
-
+        
         adata.write(results_file)
 
 

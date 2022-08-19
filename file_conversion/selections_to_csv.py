@@ -16,4 +16,4 @@ class SelectionsToCSV:
 
 
 if __name__ == "__main__":
-    SelectionsToCSV("temporary.h5ad", "liver")
+    SelectionsToCSV("aorta_raw.h5ad", "aorta")
