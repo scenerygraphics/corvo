@@ -135,3 +135,6 @@ ToDo.txt
 *.csv
 
 test_runner.py
+
+vosk*
+*.jar

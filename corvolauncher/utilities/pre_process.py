@@ -1,26 +1,28 @@
-#!/usr/bin/env python3
-
+import pathlib
 import scanpy as sc
-import sys
 
-# https://cellxgene.cziscience.com/collections/0b9d8a04-bb9d-44da-aa27-705bb65b54eb
-# https://figshare.com/articles/dataset/Tabula_Muris_Senis_Data_Objects/12654728
-class FileConverter:
+
+class PreProcess:
     """
 """
 
-    def __init__(self):
-        original_file = sys.argv[1]
-        results_file = sys.argv[1].rstrip(".h5ad") + "_vr_processed.h5ad"
+    def __init__(self, dataset):
+        # self.parent = parent
+        self.dataset: str = dataset
+
+        adata = sc.read_h5ad("../resources/datasets/" + dataset)
 
         # file to add 3d umap to
-        adata = sc.read_h5ad(original_file)
+        out_file: str = dataset.rstrip(".h5ad") + "_processed.h5ad"
 
         # will fail for obs with only one category or when a category has only one data point
         n_genes = 10
+
         for observation in adata.obs:
             try:
+
                 sc.tl.rank_genes_groups(adata, groupby=observation, n_genes=n_genes, method='t-test', use_raw=True)
+
                 print("success: " + observation)
                 names_list = [0] * adata.obs[observation].cat.categories.size * n_genes
                 pvals_list = [0] * adata.obs[observation].cat.categories.size * n_genes
@@ -60,9 +62,9 @@ class FileConverter:
 
         # making X sparse in csc format
         adata.X = adata.X.tocsc()
-        
-        adata.write(results_file)
+
+        adata.write(pathlib.Path("../resources/datasets/" + out_file))
 
 
 if __name__ == "__main__":
-    FileConverter()
+    PreProcess("aorta_raw.h5ad")

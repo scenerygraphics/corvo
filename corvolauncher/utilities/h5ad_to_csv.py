@@ -4,9 +4,9 @@ import scanpy as sc
 import csv
 
 
-class SelectionsToCSV:
+class H5adToCSV:
     def __init__(self, file_path, tissue):
-        export_folder = "file_conversion/" + tissue + "_annotations"
+        export_folder = "utilities/" + tissue + "_annotations"
 
         adata = sc.read_h5ad(file_path)
 
@@ -16,4 +16,4 @@ class SelectionsToCSV:
 
 
 if __name__ == "__main__":
-    SelectionsToCSV("aorta_raw.h5ad", "aorta")
+    H5adToCSV("../resources/datasets/aorta_raw.h5ad", "aorta")
