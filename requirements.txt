@@ -2,3 +2,5 @@ numpy
 pandas
 scanpy
 anndata
+qdarkstyle
+pyqt5
