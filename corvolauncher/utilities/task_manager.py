@@ -19,7 +19,7 @@ class TaskManager:
         if not os.path.exists(self.processed_dataset):
             pre_process.PreProcess(self.dataset)
 
-        # 4: launch Corvo with dataset
+        # # 4: launch Corvo with dataset
         bash_command = "java -jar corvo-0.1.0-SNAPSHOT-all.jar " + self.processed_dataset + \
                        " vosk-model-small-en-us-0.15"
         process = subprocess.Popen(bash_command.split(), stdout=subprocess.PIPE, cwd="../resources")
@@ -27,4 +27,4 @@ class TaskManager:
 
 
 if __name__ == "__main__":
-    TaskManager("skin_MurisSenis.h5ad")
+    TaskManager("marrow.h5ad")

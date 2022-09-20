@@ -4,16 +4,17 @@ import sys
 import qdarkstyle
 from pathlib import Path
 
-# from PyQt5.QtCore import Qt, QThreadPool
+# from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThreadPool
 from PyQt5.QtWidgets import (
     QMainWindow,
     QStatusBar,
     QApplication,
     QWidget,
-    QDockWidget,
+    QDockWidget, QGridLayout, QHBoxLayout, QLabel,
 )
 
-from qt_file_display import FileDisplay
+from corvolauncher.gui.qt_file_display import FileDisplay
 
 
 class MainWindow(QMainWindow):
@@ -21,19 +22,35 @@ class MainWindow(QMainWindow):
         super().__init__(*args, **kwargs)
 
         self.title = "Corvo Launcher"
-        self.left = 10
-        self.top = 10
-        self.width = 900
-        self.height = 1000
+
+        self.desktop = QApplication.desktop()
+        self.screenRect = self.desktop.screenGeometry()
+        height, width = self.screenRect.height(), self.screenRect.width()
+
+        self.win_width = width // 3
+        self.height = height // 2
+        self.left = (width - self.win_width) // 2
+        self.top = (height - self.height) // 2
 
         self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.setGeometry(self.left, self.top, self.win_width, self.height)
 
-        # self.test_widget = QWidget(self)
+        self.layout = QHBoxLayout()
+        self.layout.setAlignment(Qt.AlignTop)
+        # self.grid_layout = QGridLayout()
+        # self.grid_layout.setAlignment(Qt.AlignTop)
 
-        self.file_display_widget = FileDisplay(self)
-        self.t_wid = QWidget()
-        self.t_wid.setWindowTitle("test")
+        self.qt_file_display = FileDisplay(self)
+
+        # self.grid_layout.addWidget(self.qt_file_display, 0, 0)
+        self.layout.addWidget(self.qt_file_display)
+
+        self.layout.addWidget(QLabel("test"))
+
+        central_widget = QWidget()
+        # central_widget.setLayout(self.grid_layout)
+        central_widget.setLayout(self.layout)
+        self.setCentralWidget(central_widget)
 
         self.show()
 

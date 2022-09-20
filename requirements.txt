@@ -1,6 +1,6 @@
-numpy
+numpy>=1.21.0
 pandas
-scanpy
+scanpy=1.9.1
 anndata
-qdarkstyle
-pyqt5
+pyqt5>=5.15.6
+qdarkstyle>=2.8
