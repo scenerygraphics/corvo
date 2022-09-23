@@ -1,20 +1,20 @@
 from functools import partial
-
-from PyQt5.QtCore import pyqtSlot, Qt
-
 from os import listdir
 from os.path import isfile, join
 
+from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton
-from PyQt5.uic.properties import QtGui
+from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox
+
+from corvolauncher.gui.qt_launch_menu import LaunchMenu
 
 
-class FileDisplay(QWidget):
+class DatasetSidebar(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
         self.parent = parent
+        self.current_popup = ""
 
         self.title_font = QFont()
         self.title_font.setBold(True)
@@ -46,7 +46,7 @@ class FileDisplay(QWidget):
             # partial allows connection to be made to declaration, not overriding connecting object as with lambda
             button = QPushButton(file_name)
             self.raw_layout.addWidget(button)
-            button.clicked.connect(partial(self.load_config, button.text()))
+            button.clicked.connect(partial(self.launch_config, button.text()))
 
         self.processed_datasets = [f for f in listdir("../resources/processed_datasets/") if
                                    isfile(join("../resources/processed_datasets/", f))]
@@ -54,16 +54,30 @@ class FileDisplay(QWidget):
         for file_name in self.processed_datasets:
             button = QPushButton(file_name)
             self.processed_layout.addWidget(button)
-            button.clicked.connect(partial(self.load_launcher, button.text()))
+            button.clicked.connect(partial(self.launch_popup, button.text()))
 
         self.master_layout.addLayout(self.raw_layout, 0, 0)
         self.master_layout.addLayout(self.processed_layout, 1, 0)
 
     @pyqtSlot(str)
-    def load_config(self, button):
-        print(button)
-        pass
+    def launch_config(self, button):
+        self.parent.add_as_dock(QWidget(), button, setup=True)
 
     @pyqtSlot(str)
-    def load_launcher(self, button):
-        print("launch " + button)
+    def launch_popup(self, dataset):
+        # self.parent.add_as_dock(CorvoLauncher(self.parent, button), button, setup=False)
+        print("launch")
+        msg = QMessageBox()
+        msg.setWindowTitle("Corvo Launcher")
+        msg.setText("Launch Corvo with " + dataset + "?")
+        msg.setIcon(QMessageBox.Question)
+        msg.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
+        msg.setDefaultButton(QMessageBox.Yes)
+        msg.buttonClicked.connect(self.launch_with)
+        self.current_popup = dataset
+        msg.exec()
+
+    def launch_with(self, button):
+        if button.text() == "&Yes":
+            print(self.current_popup)
+            self.current_popup = ""

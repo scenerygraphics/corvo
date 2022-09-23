@@ -1,6 +1,9 @@
 import json
 import os.path
 import sys
+import threading
+import time
+
 import qdarkstyle
 from pathlib import Path
 
@@ -14,7 +17,7 @@ from PyQt5.QtWidgets import (
     QDockWidget, QGridLayout, QHBoxLayout, QLabel,
 )
 
-from corvolauncher.gui.qt_file_display import FileDisplay
+from corvolauncher.gui.qt_dataset_sidebar import DatasetSidebar
 
 
 class MainWindow(QMainWindow):
@@ -35,24 +38,32 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.win_width, self.height)
 
-        self.layout = QHBoxLayout()
-        self.layout.setAlignment(Qt.AlignTop)
-        # self.grid_layout = QGridLayout()
-        # self.grid_layout.setAlignment(Qt.AlignTop)
+        self.setDockOptions(QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks)
 
-        self.qt_file_display = FileDisplay(self)
+        self.file_display_dock = QDockWidget(self)
 
-        # self.grid_layout.addWidget(self.qt_file_display, 0, 0)
-        self.layout.addWidget(self.qt_file_display)
+        self.file_display_dock.setWindowTitle("Compatible Files")
+        self.file_display_dock.setFeatures(QDockWidget.NoDockWidgetFeatures)
 
-        self.layout.addWidget(QLabel("test"))
+        self.file_display_dock.setWidget(DatasetSidebar(self))
+        self.addDockWidget(Qt.LeftDockWidgetArea, self.file_display_dock)
 
-        central_widget = QWidget()
-        # central_widget.setLayout(self.grid_layout)
-        central_widget.setLayout(self.layout)
-        self.setCentralWidget(central_widget)
+        self.setCentralWidget(QWidget())
 
         self.show()
+
+    def add_as_dock(self, widget: QWidget, dataset: str, setup: bool = False):
+        dock = QDockWidget(self)
+        if setup:
+            dock.setWindowTitle(dataset + " setup")
+        else:
+            dock.setWindowTitle(dataset + " launcher")
+
+        dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
+        dock.setAllowedAreas(Qt.RightDockWidgetArea)
+
+        dock.setWidget(widget)
+        self.addDockWidget(Qt.RightDockWidgetArea, dock)
 
 
 if __name__ == "__main__":

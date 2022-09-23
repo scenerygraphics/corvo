@@ -44,7 +44,7 @@ class PreProcess:
                             for index in rank:
                                 cat[1][(name_counter * n_genes) + rank_counter] = index
                                 name_counter += 1
-                                print(index)
+                                # print(index)
 
                         rank_counter += 1
 
@@ -54,32 +54,6 @@ class PreProcess:
             except (AttributeError, ValueError, ZeroDivisionError):
                 print("fail: " + observation)
                 pass
-
-        adata.uns["rank_genes_groups"] = []
-
-        names_list = [0] * adata.obs[observation].cat.categories.size * n_genes
-        pvals_list = [0] * adata.obs[observation].cat.categories.size * n_genes
-        logfoldchanges_list = [0] * adata.obs[observation].cat.categories.size * n_genes
-
-        for cat in [["names", names_list], ["pvals", pvals_list], ["logfoldchanges", logfoldchanges_list]]:
-
-            rank_counter = 0
-            for rank in adata.uns["rank_genes_groups"][cat[0]]:  # rank is list of 1st, 2nd, 3d most expr etc
-                name_counter = 0
-                if cat[0] == "pvals":
-                    for index in rank:
-                        cat[1][(name_counter * n_genes) + rank_counter] = round(index, 4)
-                        name_counter += 1
-
-                else:
-                    for index in rank:
-                        cat[1][(name_counter * n_genes) + rank_counter] = index
-                        name_counter += 1
-
-
-                rank_counter += 1
-
-            adata.uns[(observation + "_" + cat[0])] = cat[1]
 
         # adata.obsm['X_umap_2d'] = adata.obsm['X_umap'].copy()
 
