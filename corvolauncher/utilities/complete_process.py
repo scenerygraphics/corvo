@@ -3,10 +3,9 @@ import scanpy as sc
 import numpy as np
 
 
-class PreProcess:
+class CompleteProcess:
     """
 """
-
     def __init__(self, dataset):
         # self.parent = parent
         self.dataset: str = dataset
@@ -72,4 +71,4 @@ class PreProcess:
 
 
 if __name__ == "__main__":
-    PreProcess("marrow.h5ad")
+    CompleteProcess("marrow.h5ad")

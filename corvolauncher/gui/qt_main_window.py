@@ -38,7 +38,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.win_width, self.height)
 
-        self.setDockOptions(QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks)
+        # self.setDockOptions(QMainWindow.AnimatedDocks | QMainWindow.AllowNestedDocks)
+        self.setDockOptions(QMainWindow.ForceTabbedDocks)
 
         self.file_display_dock = QDockWidget(self)
 
@@ -52,12 +53,10 @@ class MainWindow(QMainWindow):
 
         self.show()
 
-    def add_as_dock(self, widget: QWidget, dataset: str, setup: bool = False):
+    def add_as_dock(self, widget: QWidget, title: str):
         dock = QDockWidget(self)
-        if setup:
-            dock.setWindowTitle(dataset + " setup")
-        else:
-            dock.setWindowTitle(dataset + " launcher")
+
+        dock.setWindowTitle(title + " setup")
 
         dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
         dock.setAllowedAreas(Qt.RightDockWidgetArea)

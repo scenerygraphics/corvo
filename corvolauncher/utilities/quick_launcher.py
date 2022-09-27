@@ -1,11 +1,11 @@
 import os.path
 import subprocess
 
-from corvolauncher.utilities import pre_process
+from corvolauncher.utilities import complete_process
 from corvolauncher.utilities import jar_launch
 
 
-class TaskManager:
+class QuickLauncher:
     """
     main class to manage task order and pass data between class instances
     """
@@ -17,7 +17,7 @@ class TaskManager:
 
         # 3: process dataset
         if not os.path.exists("../resources/processed_datasets/" + self.processed_dataset):
-            pre_process.PreProcess(self.dataset)
+            pre_process.CompleteProcess(self.dataset)
 
         print(self.processed_dataset)
 
@@ -30,4 +30,4 @@ class TaskManager:
 
 
 if __name__ == "__main__":
-    TaskManager("marrow.h5ad")
+    QuickLauncher("marrow.h5ad")

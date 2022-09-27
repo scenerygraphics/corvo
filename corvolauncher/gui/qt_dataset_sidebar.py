@@ -6,8 +6,9 @@ from PyQt5.QtCore import pyqtSlot, Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox
 
-from corvolauncher.gui.qt_launch_menu import LaunchMenu
-
+from corvolauncher.gui.qt_line_break import QHLineBreakWidget
+from corvolauncher.gui.qt_process_menu import ProcessMenu
+from corvolauncher.gui.qt_launch_window import LaunchWindow
 
 class DatasetSidebar(QWidget):
     def __init__(self, parent):
@@ -21,7 +22,7 @@ class DatasetSidebar(QWidget):
 
         self.master_layout = QGridLayout()
         self.master_layout.setVerticalSpacing(20)
-        self.master_layout.setAlignment(Qt.AlignLeft)
+        self.master_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.master_layout)
         self.setFixedWidth(self.parent.win_width // 3)
 
@@ -57,27 +58,15 @@ class DatasetSidebar(QWidget):
             button.clicked.connect(partial(self.launch_popup, button.text()))
 
         self.master_layout.addLayout(self.raw_layout, 0, 0)
-        self.master_layout.addLayout(self.processed_layout, 1, 0)
+        self.master_layout.addWidget(QHLineBreakWidget(self), 1, 0)
+        self.master_layout.addLayout(self.processed_layout, 2, 0)
+        self.master_layout.addWidget(QHLineBreakWidget(self), 3, 0)
 
     @pyqtSlot(str)
     def launch_config(self, button):
-        self.parent.add_as_dock(QWidget(), button, setup=True)
+        self.parent.add_as_dock(ProcessMenu(self, button), button)
+        # pass
 
     @pyqtSlot(str)
     def launch_popup(self, dataset):
-        # self.parent.add_as_dock(CorvoLauncher(self.parent, button), button, setup=False)
-        print("launch")
-        msg = QMessageBox()
-        msg.setWindowTitle("Corvo Launcher")
-        msg.setText("Launch Corvo with " + dataset + "?")
-        msg.setIcon(QMessageBox.Question)
-        msg.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
-        msg.setDefaultButton(QMessageBox.Yes)
-        msg.buttonClicked.connect(self.launch_with)
-        self.current_popup = dataset
-        msg.exec()
-
-    def launch_with(self, button):
-        if button.text() == "&Yes":
-            print(self.current_popup)
-            self.current_popup = ""
+        LaunchWindow(self, dataset)
