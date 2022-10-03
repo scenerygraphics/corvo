@@ -17,7 +17,7 @@ class QuickLauncher:
 
         # 3: process dataset
         if not os.path.exists("../resources/processed_datasets/" + self.processed_dataset):
-            pre_process.CompleteProcess(self.dataset)
+            complete_process.CompleteProcess(self.dataset)
 
         print(self.processed_dataset)
 

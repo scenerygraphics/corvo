@@ -10,11 +10,13 @@ from corvolauncher.gui.qt_line_break import QHLineBreakWidget
 from corvolauncher.gui.qt_process_menu import ProcessMenu
 from corvolauncher.gui.qt_launch_window import LaunchWindow
 
+
 class DatasetSidebar(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, threadpool):
         super().__init__(parent)
 
         self.parent = parent
+        self.threadpool = threadpool
         self.current_popup = ""
 
         self.title_font = QFont()
@@ -64,8 +66,7 @@ class DatasetSidebar(QWidget):
 
     @pyqtSlot(str)
     def launch_config(self, button):
-        self.parent.add_as_dock(ProcessMenu(self, button), button)
-        # pass
+        self.parent.file_tabs.addTab(ProcessMenu(self, button, self.threadpool), button)
 
     @pyqtSlot(str)
     def launch_popup(self, dataset):

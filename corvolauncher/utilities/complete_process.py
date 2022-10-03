@@ -1,6 +1,7 @@
 import pathlib
 import scanpy as sc
 import numpy as np
+# get request default (give me index as html) Get only works for requests. Post request most commonly used for submitting form data. Could have been a get request as no additional data is sent. Could have generated a cookie based on get request to make difficult, but they don't.
 
 
 class CompleteProcess:

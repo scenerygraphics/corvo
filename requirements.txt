@@ -1,6 +1,9 @@
 numpy>=1.21.0
 pandas
-scanpy=1.9.1
+scanpy==1.9.1
 anndata
 pyqt5>=5.15.6
 qdarkstyle>=2.8
+requests
+aiohttp
+import asyncio
