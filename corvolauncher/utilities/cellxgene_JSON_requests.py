@@ -1,3 +1,5 @@
+import sys
+
 import requests
 import json
 import asyncio
@@ -16,7 +18,7 @@ class CellxGeneJSONRequests:
         for i in self.collections_json:
             self.collections[i["name"]] = i["id"]
 
-        self.test_download()
+        # self.test_download()
         # return collection names: self.collections.keys()
         # return collection ids: self.collections.values()
 
@@ -33,9 +35,12 @@ class CellxGeneJSONRequests:
 
     def test_download(self):
         # example call sequence to download a dataset within a collection by name
+        # t_sapient_collect = self.get_collection_datasets(
+        #     self.collections["A transcriptional cross species map of pancreatic islet cells"])
+        # self.download_dataset(t_sapient_collect, "mouse pancreatic islet cells")
         t_sapient_collect = self.get_collection_datasets(
-            self.collections["A transcriptional cross species map of pancreatic islet cells"])
-        self.download_dataset(t_sapient_collect, "mouse pancreatic islet cells")
+            self.collections["HTAN VUMC - Differential pre-malignant programs and microenvironment chart distinct paths to malignancy in human colorectal polyps"])
+        self.download_dataset(t_sapient_collect, "VAL and DIS datasets: Non-Epithelial")
 
 
     def get_collection_datasets(self, collection_id: str):
@@ -49,11 +54,38 @@ class CellxGeneJSONRequests:
 
     # eventually supply collection name instead of hashmap explicitly and store collections as properties
     def download_dataset(self, dset_map: dict, name: str):
+        # still writes an empty file even if canceled. Have write at end and after successful exit
+        # add external interrupt checks
+        # some datasets contain / in their name. Interpreted as directory and causes crash
+        # open("../resources/datasets/" + name.replace(" ", "_") + ".h5ad", "wb").write(h5ad_dataset.content)
+        print("Downloading %s" % name)
         aws_hash = requests.post(
             "https://api.cellxgene.cziscience.com/dp/v1/datasets/" + dset_map[name]["dataset_id"] + "/asset/" +
             dset_map[name]["filetype_id"]).json()
-        h5ad_dataset = requests.get(aws_hash["presigned_url"])
-        open("../resources/datasets/" + name.replace(" ", "_") + ".h5ad", "wb").write(h5ad_dataset.content)
+        print(aws_hash)
+
+        # if aws_hash[]  internal server error gives json not including presigned-url. Therefore a parsing error. Catch
+
+        with open("../resources/datasets/" + name.replace(" ", "_") + ".h5ad", "wb") as f:
+            # note some unusual characters cannot be parsed by the hdf5 reader
+            h5ad_dataset = requests.get(aws_hash["presigned_url"], stream=True)
+            print("past get")
+            total_length = h5ad_dataset.headers.get('content-length')
+            print(total_length)
+
+            if total_length is None:  # no content length header
+                f.write(h5ad_dataset.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in h5ad_dataset.iter_content(chunk_size=round(total_length/100)):
+                    dl += len(data)
+                    f.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                    sys.stdout.flush()
+        print("download complete")
+
 
     # infrastructure for simultaneous collection of all IDs
     async def _get_concurrent(self, url, session):

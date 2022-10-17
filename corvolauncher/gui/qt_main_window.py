@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QStatusBar,
     QApplication,
     QWidget,
-    QDockWidget, QGridLayout, QHBoxLayout, QLabel, QTabWidget,
+    QDockWidget, QGridLayout, QHBoxLayout, QLabel, QTabWidget, QTabBar,
 )
 
 from corvolauncher.gui.qt_dataset_sidebar import DatasetSidebar
@@ -48,25 +48,29 @@ class MainWindow(QMainWindow):
         self.file_display_dock.setWindowTitle("Compatible Files")
         self.file_display_dock.setFeatures(QDockWidget.NoDockWidgetFeatures)
 
-        self.file_display_dock.setWidget(DatasetSidebar(self, self.threadpool))
+        self.side_bar = DatasetSidebar(self, self.threadpool)
+
+        self.file_display_dock.setWidget(self.side_bar)
         self.addDockWidget(Qt.LeftDockWidgetArea, self.file_display_dock)
 
         self.file_tabs = QTabWidget(self, movable=True, tabsClosable=True)
         self.file_tabs.tabCloseRequested.connect(self.close_tab)
         self.no_dataset_label = QLabel("Drag and drop your .h5ad dataset into the window")
+        self.no_dataset_label.setAlignment(Qt.AlignCenter)
         self.file_tabs.addTab(self.no_dataset_label, "")
+        self.file_tabs.tabBar().setTabButton(0, QTabBar.RightSide, None)
 
         self.setCentralWidget(self.file_tabs)
 
         self.show()
 
-    def add_as_dock(self, widget: QWidget, title: str):
-        dock = QDockWidget(self)
-        dock.setWindowTitle(title + " setup")
-        dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
-        dock.setAllowedAreas(Qt.RightDockWidgetArea)
-        dock.setWidget(widget)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+    # def add_as_dock(self, widget: QWidget, title: str):
+    #     dock = QDockWidget(self)
+    #     dock.setWindowTitle(title + " setup")
+    #     dock.setFeatures(QDockWidget.AllDockWidgetFeatures)
+    #     dock.setAllowedAreas(Qt.RightDockWidgetArea)
+    #     dock.setWidget(widget)
+    #     self.addDockWidget(Qt.RightDockWidgetArea, dock)
 
     @pyqtSlot(int)
     def close_tab(self, index):
@@ -79,16 +83,18 @@ class MainWindow(QMainWindow):
             event.ignore()
 
     def dropEvent(self, event):
+        # add recursive function to append an integer to the name of a file if the name already exists
         files = [u.toLocalFile() for u in event.mimeData().urls()]
         for f in files:
             d_name = f.split("/")[-1]
             d_type = f[-5:]
-            if d_type == ".h5ad" and not os.path.exists("../resources/datasets/" + d_name):
-                print(f)
-                print(d_name)
+            if d_type == ".h5ad" and not os.path.exists("../resources/datasets/" + d_name) and not f[-14:-5] == "processed":
                 os.rename(f, "../resources/datasets/" + d_name)
+            elif d_type == ".h5ad" and not os.path.exists("../resources/processed_datasets/" + d_name) and f[-14:-5] == "processed":
+                os.rename(f, "../resources/processed_datasets/" + d_name)
             else:
                 print("the file type is not supported, or a dataset with the same name already exists")
+        self.side_bar.update_directory_index()
 
 
 if __name__ == "__main__":

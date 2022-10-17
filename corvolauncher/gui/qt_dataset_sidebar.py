@@ -1,73 +1,190 @@
+import os
 from functools import partial
 from os import listdir
 from os.path import isfile, join
 
-from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame, \
+    QGraphicsDropShadowEffect
 
+from corvolauncher.gui.dataset_fetcher import DatasetFetcher
+from corvolauncher.gui.job_runners.generic_worker import GenericWorker
+from corvolauncher.gui.job_runners.jar_worker import JarWorker
+from corvolauncher.gui.qt_confirm_popup import ConfirmPopup
 from corvolauncher.gui.qt_line_break import QHLineBreakWidget
 from corvolauncher.gui.qt_process_menu import ProcessMenu
-from corvolauncher.gui.qt_launch_window import LaunchWindow
 
 
 class DatasetSidebar(QWidget):
+    trigger_stop_corvo = pyqtSignal()
+    # corvo_running_flag = False
     def __init__(self, parent, threadpool):
         super().__init__(parent)
 
         self.parent = parent
         self.threadpool = threadpool
-        self.current_popup = ""
 
-        self.title_font = QFont()
-        self.title_font.setBold(True)
-
+        #  create and configure sidebar master and child layouts
         self.master_layout = QGridLayout()
-        self.master_layout.setVerticalSpacing(20)
+        self.master_layout.setVerticalSpacing(10)
         self.master_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.master_layout)
-        self.setFixedWidth(self.parent.win_width // 3)
+        self.setFixedWidth(self.parent.win_width // 2)
+        # self.setFixedWidth(self.parent.win_width // 3)
 
         self.raw_layout = QVBoxLayout()
         self.processed_layout = QVBoxLayout()
-
         self.raw_layout.setSpacing(5)
         self.processed_layout.setSpacing(5)
 
+        #  give section titles a bold font
         self.raw_title = QLabel("Raw Datasets")
         self.processed_title = QLabel("Processed Datasets")
-
+        self.title_font = QFont()
+        self.title_font.setBold(True)
         for t in [self.raw_title, self.processed_title]:
             t.setFont(self.title_font)
 
         self.raw_layout.addWidget(self.raw_title)
         self.processed_layout.addWidget(self.processed_title)
 
-        self.raw_datasets = [f for f in listdir("../resources/datasets/") if isfile(join("../resources/datasets/", f))]
+        # print(self.processed_layout.count())
+        # print(self.processed_layout.itemAt(0).widget().objectName())
 
-        for file_name in self.raw_datasets:
-            # partial allows connection to be made to declaration, not overriding connecting object as with lambda
-            button = QPushButton(file_name)
-            self.raw_layout.addWidget(button)
-            button.clicked.connect(partial(self.launch_config, button.text()))
+        #  create shutdown button for new Corvo instance
+        self.close_corvo_button = QPushButton("shut down Corvo")
+        self.close_corvo_button.hide()
+        self.close_corvo_button.clicked.connect(self.shutdown_corvo)
+        self.processed_layout.addWidget(self.close_corvo_button)
 
-        self.processed_datasets = [f for f in listdir("../resources/processed_datasets/") if
-                                   isfile(join("../resources/processed_datasets/", f))]
-
-        for file_name in self.processed_datasets:
-            button = QPushButton(file_name)
-            self.processed_layout.addWidget(button)
-            button.clicked.connect(partial(self.launch_popup, button.text()))
+        self.add_raw_files([f for f in listdir("../resources/datasets/") if isfile(join("../resources/datasets/", f))])
+        self.add_processed_files([f for f in listdir("../resources/processed_datasets/") if
+                                  isfile(join("../resources/processed_datasets/", f))])
 
         self.master_layout.addLayout(self.raw_layout, 0, 0)
         self.master_layout.addWidget(QHLineBreakWidget(self), 1, 0)
         self.master_layout.addLayout(self.processed_layout, 2, 0)
         self.master_layout.addWidget(QHLineBreakWidget(self), 3, 0)
+        self.dataset_fetcher = DatasetFetcher(self, self.threadpool)
+        self.master_layout.addWidget(self.dataset_fetcher)
+        self.dataset_fetcher.collection_container.blockSignals(False)
+
 
     @pyqtSlot(str)
-    def launch_config(self, button):
+    def rm_file(self, file_name):
+        @pyqtSlot()
+        def on_finished():
+            # slot triggered on finish to update sidebar
+            self.update_directory_index()
+
+        def rm_os(f_name):
+            #  function to be encapsulated in pop-up window
+            def container():
+                try:
+                    os.remove("../resources/datasets/" + f_name)
+                except FileNotFoundError:
+                    os.remove("../resources/processed_datasets/" + f_name)
+
+            worker = GenericWorker(container)
+            worker.signals.finished.connect(on_finished)
+            self.threadpool.start(worker)
+
+        ConfirmPopup("Are you sure you want to delete this dataset from your system?", rm_os, file_name)
+
+    @pyqtSlot()
+    def shutdown_corvo(self):
+        self.trigger_stop_corvo.emit()
+
+    @pyqtSlot(str)
+    def launch_jar(self, file_name):
+        @pyqtSlot()
+        def on_running():
+            #  disable dataset launch buttons to prevent duplicate launches
+            self.processed_layout.itemAt(2).widget().setEnabled(False)
+            self.processed_layout.itemAt(1).widget().show()
+
+        @pyqtSlot()
+        def on_finished():
+            self.processed_layout.itemAt(2).widget().setEnabled(True)
+            self.processed_layout.itemAt(1).widget().hide()
+
+        def container(f_name):
+            worker = JarWorker(f_name)
+            worker.signals.running.connect(on_running)
+            worker.signals.finished.connect(on_finished)
+            self.trigger_stop_corvo.connect(worker.stop)
+
+            self.threadpool.start(worker)
+
+        ConfirmPopup("Launch Corvo with " + file_name + "?", container, file_name)
+
+    def update_directory_index(self):
+        self.raw_layout.removeWidget(self.raw_layout.itemAt(1).widget())  # removing item doesnt seem to work
+        self.processed_layout.removeWidget(self.processed_layout.itemAt(2).widget())
+
+        self.add_raw_files([f for f in listdir("../resources/datasets/") if isfile(join("../resources/datasets/", f))])
+        self.add_processed_files([f for f in listdir("../resources/processed_datasets/") if
+                                isfile(join("../resources/processed_datasets/", f))])
+
+    def add_raw_files(self, r_files: list):
+        layout_container = QFrame()
+        button_layout = QVBoxLayout()
+        for file_name in r_files:
+            # partial allows connection to be made to declaration, not overriding connecting object as with lambda
+            button_del_pair = QHBoxLayout()
+            button_del_pair.setAlignment(Qt.AlignLeft)
+
+            button_del_pair.setEnabled(False)
+
+            button = QPushButton("pre-process: " + file_name)
+            button.setStyleSheet(":enabled{background-color:rgb(201, 132, 46);color: black;}" "QPushButton:pressed {background-color:rgb(82, 64, 33);color: black;}")
+            shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
+            button.setGraphicsEffect(shadow)
+            button.setObjectName(file_name)
+            button.clicked.connect(partial(self.configuration_window, button.objectName()))
+
+            del_button = QPushButton("x")
+            del_button.setStyleSheet("background-color:rgb(145, 45, 45)")
+            del_button.clicked.connect(partial(self.rm_file, button.objectName()))
+
+            button_del_pair.addWidget(del_button)
+            button_del_pair.addWidget(button)
+            button_layout.addLayout(button_del_pair)
+
+        layout_container.setLayout(button_layout)
+        layout_container.setObjectName("raw_frame")
+        self.raw_layout.addWidget(layout_container)
+
+    def add_processed_files(self, p_files: list):
+        layout_container = QFrame()
+        button_layout = QVBoxLayout()
+        for file_name in p_files:
+            button_del_pair = QHBoxLayout()
+            button_del_pair.setAlignment(Qt.AlignLeft)
+
+            button_del_pair.setEnabled(False)
+
+            button = QPushButton("launch: " + file_name)
+            button.setStyleSheet(":enabled{background-color:rgb(67, 171, 112);color: black;}" "QPushButton:pressed {background-color:rgb(36, 99, 63);color: black;}")
+            shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
+            button.setGraphicsEffect(shadow)
+            button.setObjectName(file_name)
+            button.clicked.connect(partial(self.launch_jar, button.objectName()))
+
+            del_button = QPushButton("x")
+            del_button.setStyleSheet("background-color:rgb(145, 45, 45)")
+            del_button.clicked.connect(partial(self.rm_file, button.objectName()))
+
+            button_del_pair.addWidget(del_button)
+            button_del_pair.addWidget(button)
+            button_layout.addLayout(button_del_pair)
+
+        layout_container.setObjectName("processed_frame")
+        layout_container.setLayout(button_layout)
+        self.processed_layout.addWidget(layout_container)
+
+    @pyqtSlot(str)
+    def configuration_window(self, button):
+        # make sure a tab with this dataset is not currently open
         self.parent.file_tabs.addTab(ProcessMenu(self, button, self.threadpool), button)
-
-    @pyqtSlot(str)
-    def launch_popup(self, dataset):
-        LaunchWindow(self, dataset)
