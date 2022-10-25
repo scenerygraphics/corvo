@@ -1,8 +1,9 @@
 import sys
 import traceback
+from typing import Tuple
 
+import requests
 from PyQt5.QtCore import pyqtSlot, QObject, pyqtSignal, QRunnable
-
 from corvolauncher.gui.job_runners.worker_signals import WorkerSignals
 
 
@@ -20,7 +21,7 @@ class GenericWorker(QRunnable):
         self.kwargs = kwargs
         self.signals = WorkerSignals()
 
-        # Add the callback to our kwargs
+        # Add callback to our kwargs
         # self.kwargs["progress_callback"] = self.signals.progress
 
     @pyqtSlot()
@@ -31,11 +32,19 @@ class GenericWorker(QRunnable):
         # Retrieve args/kwargs here; and fire processing using them
         try:
             self.signals.running.emit()
-            # result = self.fn(*self.args, **self.kwargs)
-            self.fn(*self.args, **self.kwargs)
+            result = self.fn(*self.args, **self.kwargs)
         except Exception:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
             self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            if type(result) == str:
+                self.signals.str_result.emit(result)
+            elif type(result) == requests.Response:
+                self.signals.resp_result.emit(result)
+            elif type(result) == int:
+                self.signals.int_result.emit(result)
+            else:
+                pass
         finally:
             self.signals.finished.emit()  # Done

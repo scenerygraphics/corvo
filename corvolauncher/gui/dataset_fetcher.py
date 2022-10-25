@@ -1,16 +1,20 @@
 import threading
 from functools import partial
 
-from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
-from PyQt5.QtGui import QFont, QMouseEvent
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QWidget, QComboBox, QMenuBar, QAction, QHBoxLayout, QPushButton
+from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal, QStringListModel, QSortFilterProxyModel
+from PyQt5.QtGui import QFont, QMouseEvent, QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QWidget, QComboBox, QMenuBar, QAction, QHBoxLayout, QPushButton, \
+    QListView, QCompleter, QLineEdit, QFrame
+from requests import Response
 
 from corvolauncher.gui.job_runners.generic_worker import GenericWorker
+from corvolauncher.gui.qt_line_break import QHLineBreakWidget
 from corvolauncher.utilities.cellxgene_JSON_requests import CellxGeneJSONRequests
 
 
 class DatasetFetcher(QWidget):
     download_signal = pyqtSignal()
+
     def __init__(self, parent, threadpool):
         super().__init__(parent)
 
@@ -19,99 +23,113 @@ class DatasetFetcher(QWidget):
 
         self.fetcher_layout = QVBoxLayout()
         self.setLayout(self.fetcher_layout)
-        self.fetcher_layout.setSpacing(5)
+        self.fetcher_layout.setSpacing(10)
         self.fetcher_layout.setAlignment(Qt.AlignLeft)
-
-        self.combobox_layout = QHBoxLayout()
-        self.combobox_layout.setAlignment(Qt.AlignLeft)
-        self.combobox_layout.setSpacing(2)
 
         #  give section titles a bold font
         self.title = QLabel("CZCellxGene Hosted Datasets")
         self.title_font = QFont()
+        self.title_font.setPointSize(10)
         self.title_font.setBold(True)
         self.title.setFont(self.title_font)
         self.fetcher_layout.addWidget(self.title)
 
-        self.data_fetcher = CellxGeneJSONRequests()
+        self.data_fetcher = CellxGeneJSONRequests(self)
         self.collection_map = self.data_fetcher.collections
+        self.collection_keys = self.collection_map.keys()
+        self.index_list = list(self.collection_keys)
+        self.index_list.insert(0, "-- search for a collection --")
 
-        self.collection_label = QLabel("Collections:")
+        # block changed signal emitted on creation to stop addition to layout that doesn't exist yet
+        self.combo_font = QFont()
+        self.combo_font.setPointSize(10)
+
+        self.collection_search = QLineEdit("-- search for a collection --")
+        self.collection_completer = QCompleter(self.collection_keys, self.collection_search)
+        self.collection_completer.setCaseSensitivity(False)
+        self.collection_search.setCompleter(self.collection_completer)
+        self.collection_search.setFont(self.combo_font)
+        self.collection_search.setFixedHeight(25)
+
+        self.collection_search.editingFinished.connect(self.search_box_handler)
+        self.fetcher_layout.addWidget(self.collection_search)
 
         self.collection_container = QComboBox()
         self.collection_container.blockSignals(True)
         self.collection_container.currentIndexChanged.connect(self.load_collection_dsets)
+        self.collection_container.setFont(self.combo_font)
+        self.collection_container.setFixedHeight(25)
 
-        for c in self.collection_map.keys():
+        listView = QListView()
+        listView.setWordWrap(True)
+        listView.setSpacing(5)
+        self.collection_container.setView(listView)
+        self.collection_container.addItem("-- select a collection to load its datasets --")
+
+        for c in self.collection_keys:
             self.collection_container.addItem(c)
+        self.fetcher_layout.addWidget(self.collection_container)
 
-        self.combobox_layout.addWidget(self.collection_label)
-        self.combobox_layout.addWidget(self.collection_container)
-
-        self.fetcher_layout.addLayout(self.combobox_layout)
-
-        self.fetcher_layout.addWidget(QLabel("Double-click to download:"))
-
-        # self.collection_bar = QMenuBar()
-        # self.file = self.collection_bar.addMenu("File")
-        # self.file.addAction("New")
-        #
-        # self.save = QAction("Save", self)
-        # self.save.setShortcut("Ctrl+S")
-        # self.file.addAction(self.save)
-        #
-        # self.edit = self.file.addMenu("Edit")
-        # self.edit.addAction("copy")
-        # self.edit.addAction("paste")
-        #
-        # self.quit = QAction("Quit", self)
-        # self.file.addAction(self.quit)
-        # self.file.triggered[QAction].connect(self.processtrigger)
-        #
-        # self.layout.addWidget(self.collection_bar)
-
-    def processtrigger(self, q):
-        print(q.text() + " is triggered")
+    @pyqtSlot()
+    def search_box_handler(self):
+        self.load_collection_dsets(self.index_list.index(self.collection_search.text()))
 
     @pyqtSlot(int)
     def load_collection_dsets(self, index):
-        dset_button_layout = QVBoxLayout()
-        dset_button_layout.setAlignment(Qt.AlignLeft)
-        dataset_map = self.data_fetcher.get_collection_datasets(self.collection_map[self.collection_container.itemText(index)])
+        print("trying to load index: " + str(index))
+        # loading datasets still runs blocking and overruns the size of the window if too many datasets exist
+        if self.fetcher_layout.count() > 3:
+            self.fetcher_layout.removeWidget(self.children()[4])
 
-        for dset in dataset_map.keys():
-            dset_button = self.DoubleClickButton(self, dset, dataset_map, self.data_fetcher, self.threadpool)
-            dset_button_layout.addWidget(dset_button)
-        self.fetcher_layout.addLayout(dset_button_layout)
+        if index != 0:
+            dataset_map = self.data_fetcher.get_collection_datasets(
+                self.collection_map[self.collection_container.itemText(index)])
 
-    @pyqtSlot(dict)
-    def fetch_dataset(self, dset_dict):
-        print(type(dset_dict))
+            dset_button_layout = QVBoxLayout()
+            dset_button_frame = QFrame()
+            dset_button_layout.setAlignment(Qt.AlignLeft)
 
-    class DoubleClickButton(QPushButton):
-        def __init__(self, parent, text, map, fetcher, threadpool):
-            super().__init__()
-            self.parent = parent
-            self.setText(text)
-            self.map = map
-            self.fetcher = fetcher
-            self.threadpool = threadpool
+            for dset in dataset_map.keys():
+                dset_layout = QHBoxLayout()
 
-        def mouseDoubleClickEvent(self, event):
-            print("pos: ", event.pos())
-            print("downloading")
-            print(self.text())
-            worker = GenericWorker(self.fetcher.download_dataset, self.map, self.text())
-            worker.signals.running.connect(self.on_running)
-            worker.signals.finished.connect(self.on_finished)
-            self.threadpool.start(worker)
+                dset_download_button = QPushButton("Download")
+                dset_download_button.setFixedWidth(65)
+                dset_download_button.clicked.connect(partial(self.on_download_click, dset, dataset_map))
+                dset_layout.addWidget(dset_download_button)
+
+                dset_label = QLabel(dset)
+                dset_label.setFixedWidth(self.collection_container.width() - dset_download_button.width())
+                # dset_label.setFixedWidth(self.collection_container.width() - 125)
+                # dset_label.setMaximumWidth(self.collection_container.width() - dset_download_button.width())
+                dset_label.setWordWrap(True)
+                dset_layout.addWidget(dset_label)
+                dset_button_layout.addLayout(dset_layout)
+            dset_button_frame.setLayout(dset_button_layout)
+            self.fetcher_layout.addWidget(dset_button_frame)
+
+    @pyqtSlot(str, dict)
+    def on_download_click(self, name, ids):
+        print(name)
+        print(ids)
 
         @pyqtSlot()
-        def on_running(self):
-            # self.parent.fetcher_layout.removeWidget(self.parent.fetcher_layout.itemAt(3).widget())
-            pass
+        def on_finished():
+            self.parent.update_directory_index()
 
-        @pyqtSlot()
-        def on_finished(self):
-            self.parent.parent.update_directory_index()
+        @pyqtSlot(Response)
+        def on_result(resp):
+            print(resp)
+            if len(resp.content) == 0:
+                print("An internal server error has occurred. Please try again later or choose a different dataset.")
+            else:
+                print("saving!")
+                print(resp.content)
+                # unique_name = self.parent.parent.moniker_recursively(
+                #     name.replace(" ", "_") + "_corvo_RAW.h5ad", "datasets")
+                # open("../resources/datasets/" + name, "wb").write(resp.content)
 
+        worker = GenericWorker(self.data_fetcher.download_dataset, ids, name)
+        # worker.signals.running.connect(on_running)
+        worker.signals.finished.connect(on_finished)
+        # worker.signals.resp_result.connect(on_result)
+        self.threadpool.start(worker)

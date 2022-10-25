@@ -22,7 +22,7 @@ class JarWorker(QRunnable):
     def run(self):
         try:
             self.signals.running.emit()
-            bash_command = "java -jar corvo-0.1.0-SNAPSHOT-all_3.jar " + "processed_datasets/" + self.file_name + \
+            bash_command = "java -jar corvo-0.1.0-SNAPSHOT-all_4.jar " + "processed_datasets/" + self.file_name + \
                            " vosk-model-small-en-us-0.15"
             process = Popen(bash_command.split(), cwd="../resources")
 
@@ -30,6 +30,7 @@ class JarWorker(QRunnable):
                 time.sleep(0.1)
 
             process.kill()
+            # does not gracefully shut down, loading into jittery steamVR home screen
             self.signals.cancelled.emit()
 
             while process.poll() is None:

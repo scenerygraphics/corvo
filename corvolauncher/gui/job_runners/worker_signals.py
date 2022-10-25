@@ -1,4 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSignal
+from requests import Response
 
 
 class WorkerSignals(QObject):
@@ -10,4 +11,8 @@ class WorkerSignals(QObject):
     finished = pyqtSignal()
     cancelled = pyqtSignal()
     error = pyqtSignal()
-    # progress = pyqtSignal()
+    progress = pyqtSignal()
+
+    int_result = pyqtSignal(int)
+    resp_result = pyqtSignal(Response)
+    str_result = pyqtSignal(str)

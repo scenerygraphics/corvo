@@ -83,18 +83,39 @@ class MainWindow(QMainWindow):
             event.ignore()
 
     def dropEvent(self, event):
-        # add recursive function to append an integer to the name of a file if the name already exists
         files = [u.toLocalFile() for u in event.mimeData().urls()]
         for f in files:
             d_name = f.split("/")[-1]
             d_type = f[-5:]
-            if d_type == ".h5ad" and not os.path.exists("../resources/datasets/" + d_name) and not f[-14:-5] == "processed":
-                os.rename(f, "../resources/datasets/" + d_name)
-            elif d_type == ".h5ad" and not os.path.exists("../resources/processed_datasets/" + d_name) and f[-14:-5] == "processed":
-                os.rename(f, "../resources/processed_datasets/" + d_name)
+            if d_type == ".h5ad" and not f[-20:-5] == "corvo_PROCESSED" and (
+                    f[-14:-5] == "corvo_RAW" or f[-14:-7] == "corvo_RAW"):  # unprocessed h5ad datasets
+                os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(d_name, "datasets")))
+            elif d_type == ".h5ad" and (
+                    f[-20:-5] == "corvo_PROCESSED" or f[-20:-7] == "corvo_PROCESSED"):  # processed h5ad datasets
+                os.rename(f, "../resources/{}/{}".format("processed_datasets",
+                                                         self.moniker_recursively(d_name, "processed_datasets")))
+            elif d_type == ".h5ad" and not f[-20:-5] == "corvo_PROCESSED" and not f[-14:-5] == "corvo_RAW":
+                os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(
+                    d_name.rstrip(".h5ad") + "_corvo_RAW.h5ad", "datasets")))
             else:
-                print("the file type is not supported, or a dataset with the same name already exists")
+                print("this file type is not supported")
         self.side_bar.update_directory_index()
+
+    def moniker_recursively(self, file_name: str, dset_dir):
+        if not os.path.exists("../resources/{}/{}".format(dset_dir, file_name)):
+            # os.rename(file_name, "../resources/{}/{}".format(dir, file_name))
+            return file_name
+        else:
+            num = file_name[-6]
+            print(num)
+            if num == "D" or num == "W":
+                file_name = file_name.rstrip(".h5ad") + "_2" + ".h5ad"
+                unique_name = self.moniker_recursively(file_name, dset_dir)
+                return unique_name
+            else:
+                file_name = file_name.rstrip(num + ".h5ad") + str(int(num) + 1) + ".h5ad"
+                unique_name = self.moniker_recursively(file_name, dset_dir)
+                return unique_name
 
 
 if __name__ == "__main__":

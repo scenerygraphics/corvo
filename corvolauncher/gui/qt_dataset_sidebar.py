@@ -30,7 +30,7 @@ class DatasetSidebar(QWidget):
         self.master_layout.setVerticalSpacing(10)
         self.master_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.master_layout)
-        self.setFixedWidth(self.parent.win_width // 2)
+        self.setFixedWidth(self.parent.win_width * 2 // 3)
         # self.setFixedWidth(self.parent.win_width // 3)
 
         self.raw_layout = QVBoxLayout()
@@ -42,6 +42,7 @@ class DatasetSidebar(QWidget):
         self.raw_title = QLabel("Raw Datasets")
         self.processed_title = QLabel("Processed Datasets")
         self.title_font = QFont()
+        self.title_font.setPointSize(10)
         self.title_font.setBold(True)
         for t in [self.raw_title, self.processed_title]:
             t.setFont(self.title_font)
@@ -83,8 +84,10 @@ class DatasetSidebar(QWidget):
             def container():
                 try:
                     os.remove("../resources/datasets/" + f_name)
+                    return 1
                 except FileNotFoundError:
                     os.remove("../resources/processed_datasets/" + f_name)
+                    return 0
 
             worker = GenericWorker(container)
             worker.signals.finished.connect(on_finished)
@@ -120,7 +123,7 @@ class DatasetSidebar(QWidget):
         ConfirmPopup("Launch Corvo with " + file_name + "?", container, file_name)
 
     def update_directory_index(self):
-        self.raw_layout.removeWidget(self.raw_layout.itemAt(1).widget())  # removing item doesnt seem to work
+        self.raw_layout.removeWidget(self.raw_layout.itemAt(1).widget())  # removing item doesnt seem to work - parse layout parent instead
         self.processed_layout.removeWidget(self.processed_layout.itemAt(2).widget())
 
         self.add_raw_files([f for f in listdir("../resources/datasets/") if isfile(join("../resources/datasets/", f))])
@@ -132,13 +135,13 @@ class DatasetSidebar(QWidget):
         button_layout = QVBoxLayout()
         for file_name in r_files:
             # partial allows connection to be made to declaration, not overriding connecting object as with lambda
-            button_del_pair = QHBoxLayout()
-            button_del_pair.setAlignment(Qt.AlignLeft)
+            button_del_set = QHBoxLayout()
+            button_del_set.setAlignment(Qt.AlignLeft)
 
-            button_del_pair.setEnabled(False)
+            button_del_set.setEnabled(False)
 
-            button = QPushButton("pre-process: " + file_name)
-            button.setStyleSheet(":enabled{background-color:rgb(201, 132, 46);color: black;}" "QPushButton:pressed {background-color:rgb(82, 64, 33);color: black;}")
+            button = QPushButton("pre-process:")
+            button.setStyleSheet(":enabled{background-color:rgb(201, 132, 46);color: black;font-size: 9pt;}" "QPushButton:pressed {background-color:rgb(82, 64, 33);color: black;font-size: 9pt;}")
             shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
             button.setGraphicsEffect(shadow)
             button.setObjectName(file_name)
@@ -148,9 +151,14 @@ class DatasetSidebar(QWidget):
             del_button.setStyleSheet("background-color:rgb(145, 45, 45)")
             del_button.clicked.connect(partial(self.rm_file, button.objectName()))
 
-            button_del_pair.addWidget(del_button)
-            button_del_pair.addWidget(button)
-            button_layout.addLayout(button_del_pair)
+            dset_label = QLabel(file_name[:-15].replace("_", " "))
+            dset_label.setFixedWidth(self.width() - 125)
+            dset_label.setWordWrap(True)
+
+            button_del_set.addWidget(del_button)
+            button_del_set.addWidget(button)
+            button_del_set.addWidget(dset_label)
+            button_layout.addLayout(button_del_set)
 
         layout_container.setLayout(button_layout)
         layout_container.setObjectName("raw_frame")
@@ -165,8 +173,8 @@ class DatasetSidebar(QWidget):
 
             button_del_pair.setEnabled(False)
 
-            button = QPushButton("launch: " + file_name)
-            button.setStyleSheet(":enabled{background-color:rgb(67, 171, 112);color: black;}" "QPushButton:pressed {background-color:rgb(36, 99, 63);color: black;}")
+            button = QPushButton("launch with:")
+            button.setStyleSheet(":enabled{background-color:rgb(67, 171, 112);color: black;font-size: 9pt;}" "QPushButton:pressed {background-color:rgb(36, 99, 63);color: black;font-size: 9pt;}")
             shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
             button.setGraphicsEffect(shadow)
             button.setObjectName(file_name)
@@ -176,8 +184,13 @@ class DatasetSidebar(QWidget):
             del_button.setStyleSheet("background-color:rgb(145, 45, 45)")
             del_button.clicked.connect(partial(self.rm_file, button.objectName()))
 
+            dset_label = QLabel(file_name[:-31].replace("_", " "))
+            dset_label.setFixedWidth(self.width() - 90)
+            dset_label.setWordWrap(True)
+
             button_del_pair.addWidget(del_button)
             button_del_pair.addWidget(button)
+            button_del_pair.addWidget(dset_label)
             button_layout.addLayout(button_del_pair)
 
         layout_container.setObjectName("processed_frame")
