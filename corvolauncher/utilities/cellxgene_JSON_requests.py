@@ -12,6 +12,7 @@ import time
 # index of all collections with names and IDs: https://api.cellxgene.cziscience.com/dp/v1/collections/index
 class CellxGeneJSONRequests:
     def __init__(self, parent):
+        start = time.time()
         self.parent = parent
         self.collections_url = "https://api.cellxgene.cziscience.com/dp/v1/collections/"
         self.collections_json = requests.get(self.collections_url + "index").json()
@@ -19,6 +20,11 @@ class CellxGeneJSONRequests:
         self.collections = {}
         for i in self.collections_json:
             self.collections[i["name"]] = i["id"]
+
+        end = time.time()
+        print("Took {} seconds.".format(end - start))
+
+
 
         # self.test_download()
         # return collection names: self.collections.keys()
@@ -37,9 +43,6 @@ class CellxGeneJSONRequests:
 
     def test_download(self):
         # example call sequence to download a dataset within a collection by name
-        # t_sapient_collect = self.get_collection_datasets(
-        #     self.collections["A transcriptional cross species map of pancreatic islet cells"])
-        # self.download_dataset(t_sapient_collect, "mouse pancreatic islet cells")
         t_sapient_collect = self.get_collection_datasets(
             self.collections["Tabula Muris Senis"])
         self.download_dataset(t_sapient_collect, "Pancreas - A single-cell transcriptomic atlas characterizes ageing tissues in the mouse - Smart-seq2")
@@ -54,8 +57,7 @@ class CellxGeneJSONRequests:
         return dset_map
 
     # eventually supply collection name instead of hashmap explicitly and store collections as properties
-    def download_dataset(self, dset_map: dict, name: str):
-        # add external interrupt checks
+    def download_dataset(self, dset_map: dict, name: str, unique_name: str):
         # some datasets contain / in their name. Interpreted as directory and causes crash
 
         print("Downloading %s" % name)
@@ -63,7 +65,8 @@ class CellxGeneJSONRequests:
             "https://api.cellxgene.cziscience.com/dp/v1/datasets/" + dset_map[name]["dataset_id"] + "/asset/" +
             dset_map[name]["filetype_id"]).json()
         print(aws_hash)
-        unique_name = self.parent.parent.parent.moniker_recursively(name.replace(" ", "_") + "_corvo_RAW.h5ad", "datasets")
+        # unique_name = self.parent.parent.parent.moniker_recursively(name.replace(" ", "_") + "_corvo_RAW.h5ad",
+        # "datasets")
 
         try:
             print(aws_hash["detail"])
@@ -71,27 +74,30 @@ class CellxGeneJSONRequests:
             # 'status': 500, 'title': 'Internal Server Error', 'type': 'about:blank'}
         except KeyError:
             h5ad_dataset = requests.get(aws_hash["presigned_url"], stream=True)
-            with open("../resources/datasets/" + unique_name, "wb") as f:
-                # note some unusual characters cannot be parsed by the hdf5 reader
+            # with open("../resources/datasets/" + unique_name, "wb") as f:
+            # note some unusual characters cannot be parsed by the hdf5 reader
 
-                # h5ad_dataset = requests.get(aws_hash["presigned_url"], stream=True)
-                total_length = h5ad_dataset.headers.get('content-length')
-                print(float(total_length)/1000000)
-                if total_length is None:  # no content length header
-                    pass
-                    f.write(h5ad_dataset.content)
-                else:
-                    dl = 0
-                    total_length = int(total_length)
-                    for data in h5ad_dataset.iter_content(chunk_size=round(total_length/100)):
+            # h5ad_dataset = requests.get(aws_hash["presigned_url"], stream=True)
+            total_length = h5ad_dataset.headers.get('content-length')
+            print(float(total_length)/1000000)
+            if total_length is None:  # no content length header
+                print("file has no contents")  # feed this back
+                pass
+                # f.write(h5ad_dataset.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in h5ad_dataset.iter_content(chunk_size=round(total_length/100)):
+                    if not self.parent.shutdown:
                         dl += len(data)
-                        f.write(data)
+                        # f.write(data)
                         done = int(50 * dl / total_length)
                         sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
                         sys.stdout.flush()
-
-        # open("../resources/datasets/" + name, "wb").write(h5ad_dataset.content)
-        return 1
+                    else:
+                        break
+                if not self.parent.shutdown:
+                    open("../resources/datasets/" + unique_name, "wb").write(h5ad_dataset.content)
 
     # infrastructure for simultaneous collection of all IDs
     async def _get_concurrent(self, url, session):
@@ -112,4 +118,4 @@ class CellxGeneJSONRequests:
 
 
 if __name__ == "__main__":
-    CellxGeneJSONRequests()
+    CellxGeneJSONRequests("")

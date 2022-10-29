@@ -17,7 +17,7 @@ class PreProcess:
         if self.parent.shutdown:
             return
             # file to add 3d umap to
-        out_file: str = self.dataset.rstrip(".h5ad") + "_corvoPROCESSED.h5ad"
+        out_file: str = self.dataset.rstrip("corvo_RAW.h5ad") + "corvo_PROCESSED.h5ad"
 
         # will fail for obs with only one category or when a category has only one data point
         n_genes = 10

@@ -84,10 +84,8 @@ class DatasetSidebar(QWidget):
             def container():
                 try:
                     os.remove("../resources/datasets/" + f_name)
-                    return 1
                 except FileNotFoundError:
                     os.remove("../resources/processed_datasets/" + f_name)
-                    return 0
 
             worker = GenericWorker(container)
             worker.signals.finished.connect(on_finished)
@@ -120,7 +118,7 @@ class DatasetSidebar(QWidget):
 
             self.threadpool.start(worker)
 
-        ConfirmPopup("Launch Corvo with " + file_name + "?", container, file_name)
+        ConfirmPopup("Launch Corvo with " + file_name[:-31].replace("_", " ") + "?", container, file_name)
 
     def update_directory_index(self):
         self.raw_layout.removeWidget(self.raw_layout.itemAt(1).widget())  # removing item doesnt seem to work - parse layout parent instead
@@ -140,7 +138,7 @@ class DatasetSidebar(QWidget):
 
             button_del_set.setEnabled(False)
 
-            button = QPushButton("pre-process:")
+            button = QPushButton("pre-process")
             button.setStyleSheet(":enabled{background-color:rgb(201, 132, 46);color: black;font-size: 9pt;}" "QPushButton:pressed {background-color:rgb(82, 64, 33);color: black;font-size: 9pt;}")
             shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
             button.setGraphicsEffect(shadow)
@@ -173,7 +171,7 @@ class DatasetSidebar(QWidget):
 
             button_del_pair.setEnabled(False)
 
-            button = QPushButton("launch with:")
+            button = QPushButton("launch")
             button.setStyleSheet(":enabled{background-color:rgb(67, 171, 112);color: black;font-size: 9pt;}" "QPushButton:pressed {background-color:rgb(36, 99, 63);color: black;font-size: 9pt;}")
             shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
             button.setGraphicsEffect(shadow)

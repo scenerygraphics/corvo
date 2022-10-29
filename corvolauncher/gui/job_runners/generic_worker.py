@@ -32,19 +32,20 @@ class GenericWorker(QRunnable):
         # Retrieve args/kwargs here; and fire processing using them
         try:
             self.signals.running.emit()
-            result = self.fn(*self.args, **self.kwargs)
+            # result = self.fn(*self.args, **self.kwargs)
+            self.fn(*self.args, **self.kwargs)
         except Exception:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
             self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            if type(result) == str:
-                self.signals.str_result.emit(result)
-            elif type(result) == requests.Response:
-                self.signals.resp_result.emit(result)
-            elif type(result) == int:
-                self.signals.int_result.emit(result)
-            else:
-                pass
+        # else:
+        #     if type(result) == str:
+        #         self.signals.str_result.emit(result)
+        #     elif type(result) == requests.Response:
+        #         self.signals.resp_result.emit(result)
+        #     elif type(result) == int:
+        #         self.signals.int_result.emit(result)
+        #     else:
+        #         pass
         finally:
             self.signals.finished.emit()  # Done

@@ -11,8 +11,11 @@ class WorkerSignals(QObject):
     finished = pyqtSignal()
     cancelled = pyqtSignal()
     error = pyqtSignal()
-    progress = pyqtSignal()
 
+    progress = pyqtSignal(int)
+    file_size = pyqtSignal(int)
+
+    result = pyqtSignal()
     int_result = pyqtSignal(int)
     resp_result = pyqtSignal(Response)
     str_result = pyqtSignal(str)
