@@ -146,31 +146,32 @@ class DatasetSidebar(QWidget):
         layout_container = QFrame()
         button_layout = QVBoxLayout()
         for file_name in r_files:
-            # partial allows connection to be made to declaration, not overriding connecting object as with lambda
-            button_del_set = QHBoxLayout()
-            button_del_set.setAlignment(Qt.AlignLeft)
+            if file_name != "":  # potentially a .DS_Store file on mac
+                # partial allows connection to be made to declaration, not overriding connecting object as with lambda
+                button_del_set = QHBoxLayout()
+                button_del_set.setAlignment(Qt.AlignLeft)
 
-            button_del_set.setEnabled(False)
+                button_del_set.setEnabled(False)
 
-            button = QPushButton("pre-process")
-            button.setStyleSheet(":enabled{background-color:rgb(201, 132, 46);color: black;font-size: 9pt;}" "QPushButton:pressed {background-color:rgb(82, 64, 33);color: black;font-size: 9pt;}")
-            shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
-            button.setGraphicsEffect(shadow)
-            button.setObjectName(file_name)
-            button.clicked.connect(partial(self.configuration_window, button.objectName()))
+                button = QPushButton("pre-process")
+                button.setStyleSheet(":enabled{background-color:rgb(201, 132, 46);color: black;font-size: 9pt;}" "QPushButton:pressed {background-color:rgb(82, 64, 33);color: black;font-size: 9pt;}")
+                shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
+                button.setGraphicsEffect(shadow)
+                button.setObjectName(file_name)
+                button.clicked.connect(partial(self.configuration_window, button.objectName()))
 
-            del_button = QPushButton("x")
-            del_button.setStyleSheet("background-color:rgb(145, 45, 45)")
-            del_button.clicked.connect(partial(self.rm_file, button.objectName()))
+                del_button = QPushButton("x")
+                del_button.setStyleSheet("background-color:rgb(145, 45, 45)")
+                del_button.clicked.connect(partial(self.rm_file, button.objectName()))
 
-            dset_label = QLabel(file_name[:-15].replace("_", " "))
-            dset_label.setFixedWidth(self.width() - 125)
-            dset_label.setWordWrap(True)
+                dset_label = QLabel(file_name[:-15].replace("_", " "))
+                dset_label.setFixedWidth(self.width() - 125)
+                dset_label.setWordWrap(True)
 
-            button_del_set.addWidget(del_button)
-            button_del_set.addWidget(button)
-            button_del_set.addWidget(dset_label)
-            button_layout.addLayout(button_del_set)
+                button_del_set.addWidget(del_button)
+                button_del_set.addWidget(button)
+                button_del_set.addWidget(dset_label)
+                button_layout.addLayout(button_del_set)
 
         layout_container.setLayout(button_layout)
         layout_container.setObjectName("raw_frame")
@@ -180,30 +181,31 @@ class DatasetSidebar(QWidget):
         layout_container = QFrame()
         button_layout = QVBoxLayout()
         for file_name in p_files:
-            button_del_pair = QHBoxLayout()
-            button_del_pair.setAlignment(Qt.AlignLeft)
+            if file_name != "":
+                button_del_pair = QHBoxLayout()
+                button_del_pair.setAlignment(Qt.AlignLeft)
 
-            button_del_pair.setEnabled(False)
+                button_del_pair.setEnabled(False)
 
-            button = QPushButton("launch")
-            button.setStyleSheet(":enabled{background-color:rgb(67, 171, 112);color: black;font-size: 9pt;}" "QPushButton:pressed {background-color:rgb(36, 99, 63);color: black;font-size: 9pt;}")
-            shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
-            button.setGraphicsEffect(shadow)
-            button.setObjectName(file_name)
-            button.clicked.connect(partial(self.launch_jar, button.objectName()))
+                button = QPushButton("launch")
+                button.setStyleSheet(":enabled{background-color:rgb(67, 171, 112);color: black;font-size: 9pt;}" "QPushButton:pressed {background-color:rgb(36, 99, 63);color: black;font-size: 9pt;}")
+                shadow = QGraphicsDropShadowEffect(blurRadius=5, xOffset=3, yOffset=3)
+                button.setGraphicsEffect(shadow)
+                button.setObjectName(file_name)
+                button.clicked.connect(partial(self.launch_jar, button.objectName()))
 
-            del_button = QPushButton("x")
-            del_button.setStyleSheet("background-color:rgb(145, 45, 45)")
-            del_button.clicked.connect(partial(self.rm_file, button.objectName()))
+                del_button = QPushButton("x")
+                del_button.setStyleSheet("background-color:rgb(145, 45, 45)")
+                del_button.clicked.connect(partial(self.rm_file, button.objectName()))
 
-            dset_label = QLabel(file_name[:-31].replace("_", " "))
-            dset_label.setFixedWidth(self.width() - 90)
-            dset_label.setWordWrap(True)
+                dset_label = QLabel(file_name[:-31].replace("_", " "))
+                dset_label.setFixedWidth(self.width() - 90)
+                dset_label.setWordWrap(True)
 
-            button_del_pair.addWidget(del_button)
-            button_del_pair.addWidget(button)
-            button_del_pair.addWidget(dset_label)
-            button_layout.addLayout(button_del_pair)
+                button_del_pair.addWidget(del_button)
+                button_del_pair.addWidget(button)
+                button_del_pair.addWidget(dset_label)
+                button_layout.addLayout(button_del_pair)
 
         layout_container.setObjectName("processed_frame")
         layout_container.setLayout(button_layout)
