@@ -1,4 +1,6 @@
-from PyQt5.QtCore import QObject, pyqtSignal
+import pandas as pd
+from PyQt5.QtCore import QObject, pyqtSignal, QMetaObject
+from PyQt5.QtWidgets import QFrame, QVBoxLayout
 from requests import Response
 
 
@@ -16,6 +18,8 @@ class WorkerSignals(QObject):
     file_size = pyqtSignal(int)
 
     result = pyqtSignal()
-    int_result = pyqtSignal(int)
-    resp_result = pyqtSignal(Response)
-    str_result = pyqtSignal(str)
+    adata_result = pyqtSignal(pd.DataFrame, pd.DataFrame)
+    dict_result = pyqtSignal(dict)
+    # int_result = pyqtSignal(int)
+    # resp_result = pyqtSignal(Response)
+    # str_result = pyqtSignal(str)

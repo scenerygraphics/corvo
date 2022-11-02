@@ -34,6 +34,7 @@ class MainWindow(QMainWindow):
 
         self.win_width = width // 3
         self.height = height // 2
+        # self.height = 650
         self.left = (width - self.win_width) // 2
         self.top = (height - self.height) // 2
 
@@ -103,7 +104,6 @@ class MainWindow(QMainWindow):
 
     def moniker_recursively(self, file_name: str, dset_dir):
         if not os.path.exists("../resources/{}/{}".format(dset_dir, file_name)):
-            # os.rename(file_name, "../resources/{}/{}".format(dir, file_name))
             return file_name
         else:
             num = file_name[-6]

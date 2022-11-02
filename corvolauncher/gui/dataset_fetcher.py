@@ -1,31 +1,31 @@
 import sys
 import threading
+import time
+import traceback
 from functools import partial
 
-from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal, QStringListModel, QSortFilterProxyModel
+from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal, QStringListModel, QSortFilterProxyModel, QThreadPool, QThread, \
+    QMetaObject, Q_ARG
 from PyQt5.QtGui import QFont, QMouseEvent, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QWidget, QComboBox, QMenuBar, QAction, QHBoxLayout, QPushButton, \
-    QListView, QCompleter, QLineEdit, QFrame, QApplication
+    QListView, QCompleter, QLineEdit, QFrame, QApplication, QSizePolicy, QScrollArea, QBoxLayout
 from requests import Response
 
-from corvolauncher.gui.job_runners.cellxgene_worker import CellXGeneDownloadWorker, CellXGeneJSONWorker
+from corvolauncher.gui.job_runners.cellxgene_worker import DatasetDownloadWorker, DatasetInfoWorker
 from corvolauncher.gui.job_runners.generic_worker import GenericWorker
 from corvolauncher.gui.qt_line_break import QHLineBreakWidget
-from corvolauncher.utilities.cellxgene_JSON_requests import CellxGeneJSONRequests
+from corvolauncher.utilities.cellxgene_json_requests import CellxGeneJSONRequests
 
 
 class DatasetFetcher(QWidget):
-    cancel_download = pyqtSignal()
     def __init__(self, parent, threadpool):
         super().__init__(parent)
 
         self.parent = parent
         self.threadpool = threadpool
 
-        self.currently_downloading = False
-        self.currently_loading = False
-
         self.fetcher_layout = QVBoxLayout()
+        self.fetcher_layout.setAlignment(Qt.AlignTop)
         self.setLayout(self.fetcher_layout)
         self.fetcher_layout.setSpacing(10)
         self.fetcher_layout.setAlignment(Qt.AlignLeft)
@@ -79,90 +79,90 @@ class DatasetFetcher(QWidget):
         try:
             collection_index = self.index_list.index(self.collection_search.text())
             self.load_collection_dsets(collection_index)
-        except Exception:
+        # except Exception:
+        except ValueError:  # experimental
             print("collection does not exist")
-        # self.load_collection_dsets(self.index_list.index(self.collection_search.text()))
 
     @pyqtSlot(int)
     def load_collection_dsets(self, index):
-        # self.currently_loading = True
         print("trying to load index: " + str(index))
-        # loading datasets still runs blocking and overruns the size of the window if too many datasets exist
-        if self.fetcher_layout.count() > 3:
-            self.fetcher_layout.removeWidget(self.children()[4])
 
+        @pyqtSlot()
+        def on_running():
+            if self.fetcher_layout.count() > 3:  # on first loop
+                self.fetcher_layout.removeWidget(self.children()[4])  # remove previous datasets
+            self.fetcher_layout.addWidget(QLabel("fetching..."))
 
-        print(self.fetcher_layout.count())
-        print(len(self.children()))
-        if index != 0:
-            dataset_map = self.data_fetcher.get_collection_datasets(
-                self.collection_map[self.collection_container.itemText(index)])
-
+        @pyqtSlot(dict)
+        def on_result(dset_map):
+            print(dset_map)
             dset_button_layout = QVBoxLayout()
-            dset_button_layout.setSpacing(10)
+            dset_button_layout.setSpacing(15)
             dset_button_frame = QFrame()
-            dset_button_layout.setAlignment(Qt.AlignLeft)
+            dset_button_layout.setAlignment(Qt.AlignTop)
 
-            for dset in dataset_map.keys():
+            for dset in dset_map.keys():
                 dset_layout = QHBoxLayout()
                 dset_download_button = QPushButton("Download")
+
                 dset_download_button.setObjectName(dset)
-                dset_download_button.setFixedWidth(65)
-                dset_download_button.setFixedHeight(20)
-                dset_download_button.clicked.connect(partial(self.launch_download, dset, dataset_map))
+                # dset_download_button.setFixedWidth(65)
+                # dset_download_button.setFixedHeight(20)
+                dset_download_button.setMinimumSize(65, 25)
+                dset_download_button.adjustSize()
+                dset_download_button.clicked.connect(partial(self.launch_download, dset, dset_map))
                 dset_layout.addWidget(dset_download_button)
 
-                # dset_cancel_button = QPushButton("Cancel")
-                # dset_cancel_button.setObjectName(dset + "cancel")
-                # dset_download_button.setFixedWidth(65)
-                # dset_cancel_button.clicked.connect(self.cancel)
-                # dset_cancel_button.hide()
-                # dset_layout.addWidget(dset_cancel_button)
+                dset_cancel_button = QPushButton("Cancel")
+                dset_cancel_button.setObjectName(dset + "cancel")
+                dset_cancel_button.setMinimumSize(65, 25)
+                dset_cancel_button.adjustSize()
+                # dset_cancel_button.setFixedWidth(65)
+                # dset_cancel_button.setFixedHeight(20)
+                dset_cancel_button.hide()
+                dset_layout.addWidget(dset_cancel_button)
 
                 dset_label = QLabel(dset)
-                dset_label.setMinimumHeight(30)
-                dset_label.setFixedWidth(self.collection_container.width() - dset_download_button.width())
-                # dset_label.setFixedWidth(self.collection_container.width() - 125)
-                # dset_label.setMaximumWidth(self.collection_container.width() - dset_download_button.width())
+                dset_label.setMinimumHeight(25)
+                dset_label.setFixedWidth(self.collection_container.width() - (dset_download_button.width() + 60))
+                dset_label.adjustSize()
                 dset_label.setWordWrap(True)
                 dset_layout.addWidget(dset_label)
                 dset_button_layout.addLayout(dset_layout)
+
+            dset_button_layout.addStretch()
+            # dset_button_layout.setMinimumSize(dset_button_layout.minimumSizeHint())
             dset_button_frame.setLayout(dset_button_layout)
-            self.fetcher_layout.addWidget(dset_button_frame)
 
-        # @pyqtSlot()
-        # def on_running():
-        #     self.fetcher_layout.addWidget(QLabel("fetching..."))
-        #
-        # @pyqtSlot()
-        # def on_finished():
-        #     self.fetcher_layout.removeWidget(self.children()[3])
+            scroll_area = QScrollArea()
+            scroll_area.setWidget(dset_button_frame)
+            nb = len(dset_map.keys())
+            if nb > 5:
+                scroll_area.setFixedHeight(260)
+            else:
+                scroll_area.setFixedHeight((nb * 40) + 15)
 
-        # worker = CellXGeneJSONWorker(self, index)
-        # self.threadpool.start(worker)
-        # worker = GenericWorker(container, index)
-        # worker.signals.running.connect(on_running)
-        # worker.signals.finished.connect(on_finished)
-        # self.threadpool.start(worker)
+            self.fetcher_layout.addWidget(scroll_area)
 
-    # @pyqtSlot()
-    # def cancel(self):
-    #     self.cancel_download.emit()
+            self.fetcher_layout.removeWidget(self.children()[4])  # remove "fetching..." label
+
+        if index != 0:  # in case hint is submitted as index
+            worker = DatasetInfoWorker(self, index)
+            worker.signals.running.connect(on_running)
+            worker.signals.dict_result.connect(on_result)
+            self.threadpool.start(worker)
 
     @pyqtSlot(str, dict)
     def launch_download(self, name, ids):
-        print(name)
-        print(ids)
-
-        # btn_pressed = self.sender()
-        # btn_pressed.hide()
-        # @pyqtSlot()
-        # def on_running():
-        #     btn_pressed.hide()
-        #     print(self.fetcher_layout.findChild(QPushButton, name + "cancel"))
+        print("object name:")
+        print(self.findChild(QPushButton, name + "cancel"))
 
         @pyqtSlot()
         def on_finished():
+            print("in finished")
+            cancel_button.hide()
+            download_button.show()
+            cancel_button.setText("Cancel")  # reset button text
             self.parent.update_directory_index()
 
         @pyqtSlot(float)
@@ -170,15 +170,31 @@ class DatasetFetcher(QWidget):
             print(float(size) / 1000000)
 
         @pyqtSlot(int)
-        def progress_bar(done):
+        def progress(done):
             sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
             sys.stdout.flush()
 
-        # # worker = GenericWorker(self.data_fetcher.download_dataset, ids, name)
-        worker = CellXGeneDownloadWorker(self, ids, name, self.parent.parent.moniker_recursively(name.replace(" ", "_") + "_corvo_RAW.h5ad", "datasets"))
-        worker.signals.file_size.connect(disp_file_size)
-        worker.signals.progress.connect(progress_bar)
+        @pyqtSlot()
+        def cancel():
+            # update the status bar from here
+            worker.stop()
+            cancel_button.disconnect()  # disconnect from temporary download worker as button is persistent
+            cancel_button.setText("cancelling...")
+            print("should be disconnected and only appear once")
+
+        download_button = self.sender()
+        cancel_button = self.findChild(QPushButton, name + "cancel")
+
+        download_button.hide()
+        cancel_button.show()
+        cancel_button.clicked.connect(cancel)
+
+        worker = DatasetDownloadWorker(self, name, ids)
         worker.signals.finished.connect(on_finished)
-        # worker.signals.running.connect(on_running)
-        self.cancel_download.connect(worker.stop)
+        worker.signals.file_size.connect(disp_file_size)
+        worker.signals.progress.connect(progress)
         self.threadpool.start(worker)
+
+    @pyqtSlot()
+    def cancel(self):
+        self.cancel_download.emit()

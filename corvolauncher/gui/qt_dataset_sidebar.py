@@ -6,7 +6,7 @@ from os.path import isfile, join
 from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame, \
-    QGraphicsDropShadowEffect
+    QGraphicsDropShadowEffect, QSizePolicy
 
 from corvolauncher.gui.dataset_fetcher import DatasetFetcher
 from corvolauncher.gui.job_runners.generic_worker import GenericWorker
@@ -25,12 +25,17 @@ class DatasetSidebar(QWidget):
         self.parent = parent
         self.threadpool = threadpool
 
-        #  create and configure sidebar master and child layouts
-        self.master_layout = QGridLayout()
-        self.master_layout.setVerticalSpacing(10)
+        #  create and configure sidebar master and child layob nuts
+        # self.master_layout = QGridLayout()
+        self.master_layout = QVBoxLayout()
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # self.master_layout.setVerticalSpacing(10)
+        self.master_layout.setSpacing(10)
         self.master_layout.setAlignment(Qt.AlignTop)
+
+
         self.setLayout(self.master_layout)
-        self.setFixedWidth(self.parent.win_width * 2 // 3)
+        self.setFixedWidth(self.parent.win_width * 3 // 4)
         # self.setFixedWidth(self.parent.win_width // 3)
 
         self.raw_layout = QVBoxLayout()
@@ -63,13 +68,22 @@ class DatasetSidebar(QWidget):
         self.add_processed_files([f for f in listdir("../resources/processed_datasets/") if
                                   isfile(join("../resources/processed_datasets/", f))])
 
-        self.master_layout.addLayout(self.raw_layout, 0, 0)
-        self.master_layout.addWidget(QHLineBreakWidget(self), 1, 0)
-        self.master_layout.addLayout(self.processed_layout, 2, 0)
-        self.master_layout.addWidget(QHLineBreakWidget(self), 3, 0)
+        self.master_layout.addLayout(self.raw_layout)
+        self.master_layout.addWidget(QHLineBreakWidget(self))
+        self.master_layout.addLayout(self.processed_layout)
+        self.master_layout.addWidget(QHLineBreakWidget(self))
         self.dataset_fetcher = DatasetFetcher(self, self.threadpool)
         self.master_layout.addWidget(self.dataset_fetcher)
         self.dataset_fetcher.collection_container.blockSignals(False)
+        self.master_layout.addStretch()
+
+        # self.master_layout.addLayout(self.raw_layout, 0, 0)
+        # self.master_layout.addWidget(QHLineBreakWidget(self), 1, 0)
+        # self.master_layout.addLayout(self.processed_layout, 2, 0)
+        # self.master_layout.addWidget(QHLineBreakWidget(self), 3, 0)
+        # self.dataset_fetcher = DatasetFetcher(self, self.threadpool)
+        # self.master_layout.addWidget(self.dataset_fetcher)
+        # self.dataset_fetcher.collection_container.blockSignals(False)
 
 
     @pyqtSlot(str)
@@ -198,4 +212,4 @@ class DatasetSidebar(QWidget):
     @pyqtSlot(str)
     def configuration_window(self, button):
         # make sure a tab with this dataset is not currently open
-        self.parent.file_tabs.addTab(ProcessMenu(self, button, self.threadpool), button)
+        self.parent.file_tabs.addTab(ProcessMenu(self, button, self.threadpool), button[:-14].replace("_", " ")[0:20] + "...")
