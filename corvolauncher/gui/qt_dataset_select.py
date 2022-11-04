@@ -1,23 +1,17 @@
 import sys
-import threading
 import time
-import traceback
 from functools import partial
 
-from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal, QStringListModel, QSortFilterProxyModel, QThreadPool, QThread, \
-    QMetaObject, Q_ARG
+from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QMouseEvent, QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import QVBoxLayout, QLabel, QWidget, QComboBox, QMenuBar, QAction, QHBoxLayout, QPushButton, \
-    QListView, QCompleter, QLineEdit, QFrame, QApplication, QSizePolicy, QScrollArea, QBoxLayout
-from requests import Response
+from PyQt5.QtWidgets import QVBoxLayout, QLabel, QWidget, QComboBox, QHBoxLayout, QPushButton, \
+    QListView, QCompleter, QLineEdit, QFrame, QScrollArea
 
-from corvolauncher.gui.job_runners.cellxgene_worker import DatasetDownloadWorker, DatasetInfoWorker
-from corvolauncher.gui.job_runners.generic_worker import GenericWorker
-from corvolauncher.gui.qt_line_break import QHLineBreakWidget
-from corvolauncher.utilities.cellxgene_json_requests import CellxGeneJSONRequests
+from corvolauncher.gui.job_runners.download_workers import DatasetDownloadWorker, DatasetInfoWorker
+from corvolauncher.utilities.cellxgene_scrape import CellxGeneJSONRequests
 
 
-class DatasetFetcher(QWidget):
+class DatasetSelect(QWidget):
     def __init__(self, parent, threadpool):
         super().__init__(parent)
 

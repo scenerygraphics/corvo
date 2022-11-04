@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
     QDockWidget, QGridLayout, QHBoxLayout, QLabel, QTabWidget, QTabBar,
 )
 
-from corvolauncher.gui.qt_dataset_sidebar import DatasetSidebar
+from corvolauncher.gui.qt_sidebar import DatasetSidebar
 
 
 class MainWindow(QMainWindow):

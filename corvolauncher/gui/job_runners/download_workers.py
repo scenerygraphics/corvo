@@ -11,7 +11,7 @@ from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import QVBoxLayout, QFrame, QHBoxLayout, QPushButton, QLabel
 
 from corvolauncher.gui.job_runners.worker_signals import WorkerSignals
-from corvolauncher.utilities.cellxgene_json_requests import CellxGeneJSONRequests
+from corvolauncher.utilities.cellxgene_scrape import CellxGeneJSONRequests
 
 
 class DatasetDownloadWorker(QRunnable):
@@ -117,3 +117,10 @@ class DatasetInfoWorker(QRunnable):
             self.signals.dict_result.emit(dataset_map)
         finally:
             self.signals.finished.emit()  # Done
+
+
+class ModelDownloadWorker(QRunnable):
+    def __init__(self):
+        super(ModelDownloadWorker, self).__init__()
+
+        pass

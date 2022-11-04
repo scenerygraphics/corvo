@@ -8,12 +8,13 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame, \
     QGraphicsDropShadowEffect, QSizePolicy
 
-from corvolauncher.gui.dataset_fetcher import DatasetFetcher
+from corvolauncher.gui.qt_dataset_select import DatasetSelect
 from corvolauncher.gui.job_runners.generic_worker import GenericWorker
 from corvolauncher.gui.job_runners.jar_worker import JarWorker
 from corvolauncher.gui.qt_confirm_popup import ConfirmPopup
 from corvolauncher.gui.qt_line_break import QHLineBreakWidget
 from corvolauncher.gui.qt_process_menu import ProcessMenu
+from corvolauncher.gui.qt_speech_model_select import SpeechModelSelect
 
 
 class DatasetSidebar(QWidget):
@@ -70,11 +71,19 @@ class DatasetSidebar(QWidget):
 
         self.master_layout.addLayout(self.raw_layout)
         self.master_layout.addWidget(QHLineBreakWidget(self))
+
         self.master_layout.addLayout(self.processed_layout)
         self.master_layout.addWidget(QHLineBreakWidget(self))
-        self.dataset_fetcher = DatasetFetcher(self, self.threadpool)
-        self.master_layout.addWidget(self.dataset_fetcher)
-        self.dataset_fetcher.collection_container.blockSignals(False)
+
+        self.dataset_select = DatasetSelect(self, self.threadpool)
+        self.master_layout.addWidget(self.dataset_select)
+        self.dataset_select.collection_container.blockSignals(False)
+        self.master_layout.addWidget(QHLineBreakWidget(self))
+
+        self.speech_model_select = SpeechModelSelect(self, self.threadpool)
+        self.master_layout.addWidget(self.speech_model_select)
+        self.speech_model_select.collection_container.blockSignals(False)
+
         self.master_layout.addStretch()
 
         # self.master_layout.addLayout(self.raw_layout, 0, 0)
