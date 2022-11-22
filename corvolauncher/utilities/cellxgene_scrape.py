@@ -1,5 +1,4 @@
 import sys
-from typing import Tuple
 
 import requests
 import json

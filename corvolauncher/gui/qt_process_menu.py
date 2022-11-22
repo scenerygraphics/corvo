@@ -74,6 +74,7 @@ class ProcessMenu(QWidget):
         self.interrupt_button.hide()  # hidden until worker is launched
         self.process_layout.addWidget(self.interrupt_button)
 
+        # self.process_label = QLabel(self.dataset[:-14].replace("_", " "))
         self.process_label = QLabel(self.dataset[:-14].replace("_", " "))
         self.process_label.setMinimumHeight(30)
         self.process_label.setFixedWidth(self.width() - self.process_button.width())

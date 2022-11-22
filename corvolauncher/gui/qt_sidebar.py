@@ -78,11 +78,11 @@ class DatasetSidebar(QWidget):
         self.dataset_select = DatasetSelect(self, self.threadpool)
         self.master_layout.addWidget(self.dataset_select)
         self.dataset_select.collection_container.blockSignals(False)
-        self.master_layout.addWidget(QHLineBreakWidget(self))
+        # self.master_layout.addWidget(QHLineBreakWidget(self))
 
-        self.speech_model_select = SpeechModelSelect(self, self.threadpool)
-        self.master_layout.addWidget(self.speech_model_select)
-        self.speech_model_select.collection_container.blockSignals(False)
+        # self.speech_model_select = SpeechModelSelect(self, self.threadpool)
+        # self.master_layout.addWidget(self.speech_model_select)
+        # self.speech_model_select.collection_container.blockSignals(False)
 
         self.master_layout.addStretch()
 

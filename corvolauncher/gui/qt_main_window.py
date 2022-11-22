@@ -24,6 +24,9 @@ class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # pathlib.Home()
+        # . directory home/.corvo/resources
+
         self.title = "Corvo Launcher"
         self.threadpool = QThreadPool()
 
@@ -118,8 +121,12 @@ class MainWindow(QMainWindow):
                 return unique_name
 
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

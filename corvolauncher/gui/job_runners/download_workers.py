@@ -27,7 +27,7 @@ class DatasetDownloadWorker(QRunnable):
         self.ids = ids
         self.name = name
 
-        self.unique_name = self.parent.parent.parent.moniker_recursively(self.name + "_corvo_RAW.h5ad", "datasets")
+        self.unique_name = self.parent.parent.parent.moniker_recursively(self.name.replace(" ", "_") + "_corvo_RAW.h5ad", "datasets").replace("—", "-")
 
         self.shutdown = False
         self.signals = WorkerSignals()
