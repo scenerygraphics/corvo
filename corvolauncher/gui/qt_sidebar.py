@@ -6,7 +6,7 @@ from os.path import isfile, join
 from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame, \
-    QGraphicsDropShadowEffect, QSizePolicy
+    QGraphicsDropShadowEffect, QSizePolicy, QStatusBar
 
 from corvolauncher.gui.qt_dataset_select import DatasetSelect
 from corvolauncher.gui.job_runners.generic_worker import GenericWorker
@@ -127,11 +127,13 @@ class DatasetSidebar(QWidget):
             #  disable dataset launch buttons to prevent duplicate launches
             self.processed_layout.itemAt(2).widget().setEnabled(False)
             self.processed_layout.itemAt(1).widget().show()
+            self.parent.status_bar.showMessage("virtual reality is running")
 
         @pyqtSlot()
         def on_finished():
             self.processed_layout.itemAt(2).widget().setEnabled(True)
             self.processed_layout.itemAt(1).widget().hide()
+            self.parent.status_bar.clearMessage()
 
         def container(f_name):
             worker = JarWorker(f_name)

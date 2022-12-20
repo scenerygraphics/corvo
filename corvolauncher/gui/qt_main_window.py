@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QStatusBar,
     QApplication,
     QWidget,
-    QDockWidget, QGridLayout, QHBoxLayout, QLabel, QTabWidget, QTabBar,
+    QDockWidget, QGridLayout, QHBoxLayout, QLabel, QTabWidget, QTabBar, QComboBox,
 )
 
 from corvolauncher.gui.qt_sidebar import DatasetSidebar
@@ -65,6 +65,10 @@ class MainWindow(QMainWindow):
         self.file_tabs.tabBar().setTabButton(0, QTabBar.RightSide, None)
 
         self.setCentralWidget(self.file_tabs)
+
+        self.status_bar = QStatusBar(self)
+        # self.status_bar.insertPermanentWidget(0, QLabel("Status: "), stretch=1)
+        self.setStatusBar(self.status_bar)
 
         self.show()
 

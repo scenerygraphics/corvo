@@ -2,8 +2,9 @@ import sys
 import time
 from functools import partial
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
-from PyQt5.QtGui import QFont, QMouseEvent, QStandardItemModel, QStandardItem
+from PyQt5.QtGui import QFont, QMouseEvent, QStandardItemModel, QStandardItem, QLinearGradient
 from PyQt5.QtWidgets import QVBoxLayout, QLabel, QWidget, QComboBox, QHBoxLayout, QPushButton, \
     QListView, QCompleter, QLineEdit, QFrame, QScrollArea
 
@@ -114,6 +115,7 @@ class DatasetSelect(QWidget):
                 # dset_cancel_button.setFixedWidth(65)
                 # dset_cancel_button.setFixedHeight(20)
                 dset_cancel_button.hide()
+                # dset_cancel_button.setGeometry(QtCore.QRect(230, 30, 331, 111))
                 dset_layout.addWidget(dset_cancel_button)
 
                 dset_label = QLabel(dset)
@@ -162,9 +164,18 @@ class DatasetSelect(QWidget):
         @pyqtSlot(float)
         def disp_file_size(size):
             print(float(size) / 1000000)
+            self.parent.parent.status_bar.showMessage("Dataset size: " + str(round(float(size) / 1000000)) + " MB")
 
         @pyqtSlot(int)
         def progress(done):
+            status = done / 50
+            if 0.2 < status <= 0.8:
+                status_offset = status - 0.2
+            elif status > 0.8:
+                status_offset = status - (1 - status)
+            else:
+                status_offset = 0
+            cancel_button.setStyleSheet(f"background-color: qlineargradient(x1:0, x2:1, stop: {status_offset} rgb(67, 171, 112), stop: {status} rgb(69, 83, 100))")
             sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
             sys.stdout.flush()
 
