@@ -6,9 +6,9 @@ if sys.version_info < (3, 7):
     sys.stderr.write(
         f'You are using Python '
         + "{'.'.join(str(v) for v in sys.version_info[:3])}.\n\n"
-        + 'copylot only supports Python 3.9 and above.\n\n'
-        + 'Please install Python 3.9 using:\n'
-        + '  $ pip install python==3.9\n\n'
+        + 'corvo only supports Python 3.7 and above.\n\n'
+        + 'Please install Python 3.7 using:\n'
+        + '  $ pip install python==3.7\n\n'
     )
     sys.exit(1)
 
