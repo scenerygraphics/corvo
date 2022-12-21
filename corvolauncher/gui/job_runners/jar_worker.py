@@ -24,7 +24,7 @@ class JarWorker(QRunnable):
     def run(self):
         try:
             self.signals.running.emit()
-            bash_command = "java -jar corvo-0.1.0-SNAPSHOT-all_4.jar " + "processed_datasets/" + self.file_name + \
+            bash_command = "java -jar corvo-0.1.0-SNAPSHOT-all.jar " + "processed_datasets/" + self.file_name + \
                            " vosk-model-small-en-us-0.15/vosk-model-small-en-us-0.15"
             process = Popen(bash_command.split(), cwd=os.path.join(str(Path.home()), ".corvo", "resources"))
 
