@@ -1,0 +1,30 @@
+{% set name = "corvo" %}
+{% set version = "0.1" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  git_url: https://github.com/scenerygraphics/CorvoLauncher
+  git_rev: 79a5a29d34d63f6f57badfecc0ee1b698f1a0790
+
+requirements:
+  build:
+    - pip
+    - python
+    - setuptools
+    - openjdk>=17.0.3
+  run:
+    - python
+    - openjdk>=17.0.3
+
+test:
+  imports:
+    - corvolauncher
+
+about:
+  home: https://github.com/scenerygraphics/CorvoLauncher
+  license: BSD
+  license_family: BSD
+  summary: VR visualization for CellxGene single-cell datasets

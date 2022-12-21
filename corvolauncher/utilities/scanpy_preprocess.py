@@ -1,3 +1,4 @@
+import os
 import pathlib
 import scanpy as sc
 
@@ -12,7 +13,8 @@ class PreProcess:
         self.process_task()
 
     def process_task(self):
-        adata = sc.read_h5ad("../resources/datasets/" + self.dataset)
+
+        adata = sc.read_h5ad(os.path.join(str(pathlib.Path.home()), ".corvo", "resources", "datasets", self.dataset))
         # adata.var_names = adata.var["feature_name"]
         if self.parent.shutdown:
             return
@@ -87,4 +89,4 @@ class PreProcess:
         if self.parent.shutdown:
             return
 
-        adata.write(pathlib.Path("../resources/processed_datasets/" + out_file))
+        adata.write(os.path.join(str(pathlib.Path.home()), ".corvo", "resources", "processed_datasets", out_file))

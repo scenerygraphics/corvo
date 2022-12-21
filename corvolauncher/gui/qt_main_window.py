@@ -14,15 +14,18 @@ from PyQt5.QtWidgets import (
     QStatusBar,
     QApplication,
     QWidget,
-    QDockWidget, QGridLayout, QHBoxLayout, QLabel, QTabWidget, QTabBar,
+    QDockWidget, QGridLayout, QHBoxLayout, QLabel, QTabWidget, QTabBar, QComboBox,
 )
 
-from corvolauncher.gui.qt_dataset_sidebar import DatasetSidebar
+from corvolauncher.gui.qt_sidebar import DatasetSidebar
+from corvolauncher.utilities.startup import Startup
 
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        Startup()
 
         self.title = "Corvo Launcher"
         self.threadpool = QThreadPool()
@@ -63,6 +66,10 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.file_tabs)
 
+        self.status_bar = QStatusBar(self)
+        # self.status_bar.insertPermanentWidget(0, QLabel("Status: "), stretch=1)
+        self.setStatusBar(self.status_bar)
+
         self.show()
 
     # def add_as_dock(self, widget: QWidget, title: str):
@@ -90,20 +97,27 @@ class MainWindow(QMainWindow):
             d_type = f[-5:]
             if d_type == ".h5ad" and not f[-20:-5] == "corvo_PROCESSED" and (
                     f[-14:-5] == "corvo_RAW" or f[-14:-7] == "corvo_RAW"):  # unprocessed h5ad datasets
-                os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(d_name, "datasets")))
+                # os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(d_name, "datasets")))
+                os.rename(f, os.path.join(str(Path.home()), ".corvo", "resources", "datasets", self.moniker_recursively(d_name, "datasets")))
             elif d_type == ".h5ad" and (
                     f[-20:-5] == "corvo_PROCESSED" or f[-20:-7] == "corvo_PROCESSED"):  # processed h5ad datasets
-                os.rename(f, "../resources/{}/{}".format("processed_datasets",
-                                                         self.moniker_recursively(d_name, "processed_datasets")))
+                # os.rename(f, "../resources/{}/{}".format("processed_datasets",
+                #                                          self.moniker_recursively(d_name, "processed_datasets")))
+                os.rename(f, os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets",
+                                          self.moniker_recursively(d_name, "processed_datasets")))
             elif d_type == ".h5ad" and not f[-20:-5] == "corvo_PROCESSED" and not f[-14:-5] == "corvo_RAW":
-                os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(
-                    d_name.rstrip(".h5ad") + "_corvo_RAW.h5ad", "datasets")))
+                # os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(
+                #     d_name.rstrip(".h5ad") + "_corvo_RAW.h5ad", "datasets")))
+                os.rename(f, os.path.join(str(Path.home()), ".corvo", "resources", "datasets",
+                                          self.moniker_recursively(
+                                              d_name.rstrip(".h5ad") + "_corvo_RAW.h5ad", "datasets")))
             else:
                 print("this file type is not supported")
         self.side_bar.update_directory_index()
 
     def moniker_recursively(self, file_name: str, dset_dir):
-        if not os.path.exists("../resources/{}/{}".format(dset_dir, file_name)):
+        # if not os.path.exists("../resources/{}/{}".format(dset_dir, file_name)):
+        if not os.path.exists(os.path.join(str(Path.home()), ".corvo", "resources", dset_dir, file_name)):
             return file_name
         else:
             num = file_name[-6]
@@ -118,8 +132,12 @@ class MainWindow(QMainWindow):
                 return unique_name
 
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

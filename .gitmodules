@@ -1,0 +1,3 @@
+[submodule "Corvo"]
+	path = corvo-main
+	url = https://github.com/scenerygraphics/Corvo

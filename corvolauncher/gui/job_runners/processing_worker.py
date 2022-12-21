@@ -4,7 +4,7 @@ import traceback
 from PyQt5.QtCore import pyqtSlot, QObject, pyqtSignal, QRunnable
 
 from corvolauncher.gui.job_runners.worker_signals import WorkerSignals
-from corvolauncher.utilities.pre_process import PreProcess
+from corvolauncher.utilities.scanpy_preprocess import PreProcess
 
 
 class ProcessingWorker(QRunnable):

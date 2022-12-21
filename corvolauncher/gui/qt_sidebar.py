@@ -2,18 +2,20 @@ import os
 from functools import partial
 from os import listdir
 from os.path import isfile, join
+from pathlib import Path
 
 from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QFrame, \
-    QGraphicsDropShadowEffect, QSizePolicy
+    QGraphicsDropShadowEffect, QSizePolicy, QStatusBar
 
-from corvolauncher.gui.dataset_fetcher import DatasetFetcher
+from corvolauncher.gui.qt_dataset_select import DatasetSelect
 from corvolauncher.gui.job_runners.generic_worker import GenericWorker
 from corvolauncher.gui.job_runners.jar_worker import JarWorker
 from corvolauncher.gui.qt_confirm_popup import ConfirmPopup
 from corvolauncher.gui.qt_line_break import QHLineBreakWidget
 from corvolauncher.gui.qt_process_menu import ProcessMenu
+from corvolauncher.gui.qt_speech_model_select import SpeechModelSelect
 
 
 class DatasetSidebar(QWidget):
@@ -64,17 +66,25 @@ class DatasetSidebar(QWidget):
         self.close_corvo_button.clicked.connect(self.shutdown_corvo)
         self.processed_layout.addWidget(self.close_corvo_button)
 
-        self.add_raw_files([f for f in listdir("../resources/datasets/") if isfile(join("../resources/datasets/", f))])
-        self.add_processed_files([f for f in listdir("../resources/processed_datasets/") if
-                                  isfile(join("../resources/processed_datasets/", f))])
+        self.add_raw_files([f for f in listdir(os.path.join(str(Path.home()), ".corvo", "resources", "datasets")) if isfile(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", f))])
+        self.add_processed_files([f for f in listdir(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets")) if
+                                  isfile(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets", f))])
 
         self.master_layout.addLayout(self.raw_layout)
         self.master_layout.addWidget(QHLineBreakWidget(self))
+
         self.master_layout.addLayout(self.processed_layout)
         self.master_layout.addWidget(QHLineBreakWidget(self))
-        self.dataset_fetcher = DatasetFetcher(self, self.threadpool)
-        self.master_layout.addWidget(self.dataset_fetcher)
-        self.dataset_fetcher.collection_container.blockSignals(False)
+
+        self.dataset_select = DatasetSelect(self, self.threadpool)
+        self.master_layout.addWidget(self.dataset_select)
+        self.dataset_select.collection_container.blockSignals(False)
+        # self.master_layout.addWidget(QHLineBreakWidget(self))
+
+        # self.speech_model_select = SpeechModelSelect(self, self.threadpool)
+        # self.master_layout.addWidget(self.speech_model_select)
+        # self.speech_model_select.collection_container.blockSignals(False)
+
         self.master_layout.addStretch()
 
         # self.master_layout.addLayout(self.raw_layout, 0, 0)
@@ -97,9 +107,9 @@ class DatasetSidebar(QWidget):
             #  function to be encapsulated in pop-up window
             def container():
                 try:
-                    os.remove("../resources/datasets/" + f_name)
+                    os.remove(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", f_name))
                 except FileNotFoundError:
-                    os.remove("../resources/processed_datasets/" + f_name)
+                    os.remove(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets", f_name))
 
             worker = GenericWorker(container)
             worker.signals.finished.connect(on_finished)
@@ -118,11 +128,13 @@ class DatasetSidebar(QWidget):
             #  disable dataset launch buttons to prevent duplicate launches
             self.processed_layout.itemAt(2).widget().setEnabled(False)
             self.processed_layout.itemAt(1).widget().show()
+            self.parent.status_bar.showMessage("virtual reality is running")
 
         @pyqtSlot()
         def on_finished():
             self.processed_layout.itemAt(2).widget().setEnabled(True)
             self.processed_layout.itemAt(1).widget().hide()
+            self.parent.status_bar.clearMessage()
 
         def container(f_name):
             worker = JarWorker(f_name)
@@ -138,9 +150,11 @@ class DatasetSidebar(QWidget):
         self.raw_layout.removeWidget(self.raw_layout.itemAt(1).widget())  # removing item doesnt seem to work - parse layout parent instead
         self.processed_layout.removeWidget(self.processed_layout.itemAt(2).widget())
 
-        self.add_raw_files([f for f in listdir("../resources/datasets/") if isfile(join("../resources/datasets/", f))])
-        self.add_processed_files([f for f in listdir("../resources/processed_datasets/") if
-                                isfile(join("../resources/processed_datasets/", f))])
+        self.add_raw_files([f for f in listdir(os.path.join(str(Path.home()), ".corvo", "resources", "datasets")) if
+                            isfile(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", f))])
+        self.add_processed_files(
+            [f for f in listdir(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets")) if
+             isfile(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets", f))])
 
     def add_raw_files(self, r_files: list):
         layout_container = QFrame()

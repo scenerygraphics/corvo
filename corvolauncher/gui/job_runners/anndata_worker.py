@@ -1,5 +1,8 @@
+import os
 import sys
 import traceback
+from pathlib import Path
+
 import scanpy as sc
 
 from PyQt5.QtCore import pyqtSlot, QObject, pyqtSignal, QRunnable
@@ -31,7 +34,7 @@ class AnndataWorker(QRunnable):
         # Retrieve args/kwargs here; and fire processing using them
         try:
             self.signals.running.emit()
-            adata = sc.read_h5ad("../resources/datasets/" + self.dataset)
+            adata = sc.read_h5ad(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", self.dataset))
             obs = adata.obs
             var = adata.var
 
