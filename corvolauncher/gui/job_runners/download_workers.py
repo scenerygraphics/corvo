@@ -3,6 +3,7 @@ import sys
 import time
 import traceback
 from functools import partial
+from pathlib import Path
 from subprocess import Popen, DEVNULL, STDOUT
 
 import requests
@@ -60,7 +61,7 @@ class DatasetDownloadWorker(QRunnable):
                     pass
                     # f.write(h5ad_dataset.content)
                 else:
-                    with open("../resources/datasets/" + self.unique_name, "wb") as f:
+                    with open(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", self.unique_name), "wb") as f:
                         dl = 0
                         total_length = int(total_length)
                         for data in h5ad_dataset.iter_content(chunk_size=round(total_length / 100)):
@@ -72,7 +73,7 @@ class DatasetDownloadWorker(QRunnable):
                             else:
                                 break
                     if self.shutdown:  # place here as file is used by open process in loop
-                        os.remove("../resources/datasets/" + self.unique_name)
+                        os.remove(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", self.unique_name))
         except Exception:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
@@ -122,5 +123,3 @@ class DatasetInfoWorker(QRunnable):
 class ModelDownloadWorker(QRunnable):
     def __init__(self):
         super(ModelDownloadWorker, self).__init__()
-
-        pass

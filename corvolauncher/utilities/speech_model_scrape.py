@@ -39,7 +39,12 @@ class SpeechModelScrape:
                 l_models.append(tr_model)
             init_flag = 0
 
-        print(self.data)
+        # print(self.data)
+        # for language in self.data:
+            # print(language[0][0])
+            # print(language[1:])
+
+        print(self.data[0][1:][0][0])
 
 
 if __name__ == "__main__":

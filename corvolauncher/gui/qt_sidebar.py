@@ -2,6 +2,7 @@ import os
 from functools import partial
 from os import listdir
 from os.path import isfile, join
+from pathlib import Path
 
 from PyQt5.QtCore import pyqtSlot, Qt, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -65,9 +66,9 @@ class DatasetSidebar(QWidget):
         self.close_corvo_button.clicked.connect(self.shutdown_corvo)
         self.processed_layout.addWidget(self.close_corvo_button)
 
-        self.add_raw_files([f for f in listdir("../resources/datasets/") if isfile(join("../resources/datasets/", f))])
-        self.add_processed_files([f for f in listdir("../resources/processed_datasets/") if
-                                  isfile(join("../resources/processed_datasets/", f))])
+        self.add_raw_files([f for f in listdir(os.path.join(str(Path.home()), ".corvo", "resources", "datasets")) if isfile(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", f))])
+        self.add_processed_files([f for f in listdir(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets")) if
+                                  isfile(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets", f))])
 
         self.master_layout.addLayout(self.raw_layout)
         self.master_layout.addWidget(QHLineBreakWidget(self))
@@ -106,9 +107,9 @@ class DatasetSidebar(QWidget):
             #  function to be encapsulated in pop-up window
             def container():
                 try:
-                    os.remove("../resources/datasets/" + f_name)
+                    os.remove(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", f_name))
                 except FileNotFoundError:
-                    os.remove("../resources/processed_datasets/" + f_name)
+                    os.remove(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets", f_name))
 
             worker = GenericWorker(container)
             worker.signals.finished.connect(on_finished)
@@ -149,9 +150,11 @@ class DatasetSidebar(QWidget):
         self.raw_layout.removeWidget(self.raw_layout.itemAt(1).widget())  # removing item doesnt seem to work - parse layout parent instead
         self.processed_layout.removeWidget(self.processed_layout.itemAt(2).widget())
 
-        self.add_raw_files([f for f in listdir("../resources/datasets/") if isfile(join("../resources/datasets/", f))])
-        self.add_processed_files([f for f in listdir("../resources/processed_datasets/") if
-                                isfile(join("../resources/processed_datasets/", f))])
+        self.add_raw_files([f for f in listdir(os.path.join(str(Path.home()), ".corvo", "resources", "datasets")) if
+                            isfile(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", f))])
+        self.add_processed_files(
+            [f for f in listdir(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets")) if
+             isfile(os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets", f))])
 
     def add_raw_files(self, r_files: list):
         layout_container = QFrame()

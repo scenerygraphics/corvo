@@ -18,14 +18,14 @@ from PyQt5.QtWidgets import (
 )
 
 from corvolauncher.gui.qt_sidebar import DatasetSidebar
+from corvolauncher.utilities.startup import Startup
 
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # pathlib.Home()
-        # . directory home/.corvo/resources
+        Startup()
 
         self.title = "Corvo Launcher"
         self.threadpool = QThreadPool()
@@ -97,20 +97,27 @@ class MainWindow(QMainWindow):
             d_type = f[-5:]
             if d_type == ".h5ad" and not f[-20:-5] == "corvo_PROCESSED" and (
                     f[-14:-5] == "corvo_RAW" or f[-14:-7] == "corvo_RAW"):  # unprocessed h5ad datasets
-                os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(d_name, "datasets")))
+                # os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(d_name, "datasets")))
+                os.rename(f, os.path.join(str(Path.home()), ".corvo", "resources", "datasets", self.moniker_recursively(d_name, "datasets")))
             elif d_type == ".h5ad" and (
                     f[-20:-5] == "corvo_PROCESSED" or f[-20:-7] == "corvo_PROCESSED"):  # processed h5ad datasets
-                os.rename(f, "../resources/{}/{}".format("processed_datasets",
-                                                         self.moniker_recursively(d_name, "processed_datasets")))
+                # os.rename(f, "../resources/{}/{}".format("processed_datasets",
+                #                                          self.moniker_recursively(d_name, "processed_datasets")))
+                os.rename(f, os.path.join(str(Path.home()), ".corvo", "resources", "processed_datasets",
+                                          self.moniker_recursively(d_name, "processed_datasets")))
             elif d_type == ".h5ad" and not f[-20:-5] == "corvo_PROCESSED" and not f[-14:-5] == "corvo_RAW":
-                os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(
-                    d_name.rstrip(".h5ad") + "_corvo_RAW.h5ad", "datasets")))
+                # os.rename(f, "../resources/{}/{}".format("datasets", self.moniker_recursively(
+                #     d_name.rstrip(".h5ad") + "_corvo_RAW.h5ad", "datasets")))
+                os.rename(f, os.path.join(str(Path.home()), ".corvo", "resources", "datasets",
+                                          self.moniker_recursively(
+                                              d_name.rstrip(".h5ad") + "_corvo_RAW.h5ad", "datasets")))
             else:
                 print("this file type is not supported")
         self.side_bar.update_directory_index()
 
     def moniker_recursively(self, file_name: str, dset_dir):
-        if not os.path.exists("../resources/{}/{}".format(dset_dir, file_name)):
+        # if not os.path.exists("../resources/{}/{}".format(dset_dir, file_name)):
+        if not os.path.exists(os.path.join(str(Path.home()), ".corvo", "resources", dset_dir, file_name)):
             return file_name
         else:
             num = file_name[-6]

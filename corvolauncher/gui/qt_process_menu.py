@@ -52,6 +52,7 @@ class ProcessMenu(QWidget):
         self.dataset = dataset
         self.threadpool = threadpool
         # self.adata = sc.read_h5ad("../resources/datasets/" + self.dataset)
+        # self.adata = sc.read_h5ad(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", self.dataset))
 
         self.layout = QVBoxLayout()
         self.layout.setAlignment(Qt.AlignTop)

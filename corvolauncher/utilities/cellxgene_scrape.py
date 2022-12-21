@@ -1,4 +1,6 @@
+import os
 import sys
+from pathlib import Path
 
 import requests
 import json
@@ -96,7 +98,8 @@ class CellxGeneJSONRequests:
                     else:
                         break
                 if not self.parent.shutdown:
-                    open("../resources/datasets/" + unique_name, "wb").write(h5ad_dataset.content)
+                    # open("../resources/datasets/" + unique_name, "wb").write(h5ad_dataset.content)
+                    open(os.path.join(str(Path.home()), ".corvo", "resources", "datasets", unique_name), "wb").write(h5ad_dataset.content)
 
     # infrastructure for simultaneous collection of all IDs
     async def _get_concurrent(self, url, session):

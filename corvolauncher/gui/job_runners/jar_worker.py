@@ -1,4 +1,6 @@
+import os
 import time
+from pathlib import Path
 from subprocess import Popen, DEVNULL, STDOUT
 
 from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QObject
@@ -23,8 +25,8 @@ class JarWorker(QRunnable):
         try:
             self.signals.running.emit()
             bash_command = "java -jar corvo-0.1.0-SNAPSHOT-all_4.jar " + "processed_datasets/" + self.file_name + \
-                           " vosk-model-small-en-us-0.15"
-            process = Popen(bash_command.split(), cwd="../resources")
+                           " vosk-model-small-en-us-0.15/vosk-model-small-en-us-0.15"
+            process = Popen(bash_command.split(), cwd=os.path.join(str(Path.home()), ".corvo", "resources"))
 
             while not self.shutdown:
                 time.sleep(0.1)
