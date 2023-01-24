@@ -16,7 +16,7 @@ setup(
     use_scm_version={"write_to": "corvolauncher/_version.py"},
     setup_requires=['setuptools_scm'],
     entry_points={'console_scripts': ['corvo=corvolauncher.gui.qt_main_window:main']},
-    data_files=[("resources", ["corvolauncher/resources/corvo-0.1.0-SNAPSHOT-all.jar"])],
+    data_files=[("corvolauncher", ["corvolauncher/resources/corvo-0.1.0-SNAPSHOT-all.jar"])],
     packages=['corvolauncher',
               'corvolauncher.gui',
               'corvolauncher.gui.job_runners',

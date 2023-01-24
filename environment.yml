@@ -1,0 +1,11 @@
+name: corvo
+channels:
+- conda-forge
+dependencies:
+- python=3.9
+- pyqt
+- lxml
+- qdarkstyle
+- pip
+- pip: 
+  - -r requirements.txt
