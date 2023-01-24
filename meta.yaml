@@ -1,0 +1,49 @@
+{% set name = "corvo" %}
+{% set version = "0.1" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  git_url: https://github.com/scenerygraphics/corvo
+  git_rev: 619838688e474ce650b971f9b03c09db810b5996
+
+requirements:
+  build:
+    - pip
+    - python
+    - setuptools>45
+    - setuptools_scm
+    - lxml
+    - pyqt
+    - numpy>=1.21.0
+    - pandas
+    - qdarkstyle>=2.8
+    - requests
+    - aiohttp
+    - qtpy
+    - beautifulsoup4
+    - openjdk>=11.0.3
+  run:
+    - python
+    - lxml
+    - pyqt
+    - numpy>=1.21.0
+    - pandas
+    - qdarkstyle>=2.8
+    - requests
+    - aiohttp
+    - qtpy
+    - beautifulsoup4
+    - openjdk>=11.0.3
+
+test:
+  imports:
+    - corvolauncher
+
+about:
+  home: https://github.com/scenerygraphics/corvo
+  license: BSD
+  license_family: BSD
+  summary: VR visualization for CellxGene single-cell datasets
