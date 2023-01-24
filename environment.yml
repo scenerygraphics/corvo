@@ -6,6 +6,8 @@ dependencies:
 - pyqt
 - lxml
 - qdarkstyle
+- setuptools>45
+- setuptools_scm>6.0
 - pip
 - pip: 
   - -r requirements.txt
