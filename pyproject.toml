@@ -13,6 +13,20 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "pip",
+    "setuptools>45",
+    "setuptools_scm",
+    "lxml",
+    "pyqt5",
+    "numpy>=1.21.0",
+    "pandas",
+    "qdarkstyle>=2.8",
+    "requests",
+    "aiohttp",
+    "qtpy",
+    "beautifulsoup4",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/scenerygraphics/corvo"
