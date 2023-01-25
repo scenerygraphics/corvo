@@ -1,6 +1,6 @@
 cd corvo-main
 call gradlew.bat shadowJar
-copy build\libs\*-all.jar ..\corvolauncher\resources
+copy build\libs\*-all.jar ..\src\corvolauncher\resources
 cd ..
-python setup.py install
+python -m build
 if errorlevel 1 exit 1

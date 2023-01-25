@@ -1,0 +1,32 @@
+[project]
+name = "corvo"
+version = "0.1"
+authors = [
+  { name="Luke Hyman", email="lukejhyman@gmail.com" },
+  { name="Ulrik Guenther", email="hello@ulrik.is" },
+]
+description = "Corvo is a free and open-source tool that takes the visualization and analysis of CZI CellxGene single-cell datasets to 3D Virtual Reality."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/scenerygraphics/corvo"
+"Bug Tracker" = "https://github.com/scenerygraphics/corvo/issues"
+
+[project.gui-scripts]
+corvo = "corvolauncher.gui.qt_main_window:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"corvolauncher.resources" = ["*.jar"]
