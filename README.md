@@ -38,15 +38,17 @@ The following instructions use [Anaconda](https://www.anaconda.com/), but you ar
 * Run the provided setup script. This will compile `corvo-core`, and use setuptools to install corvo.
   ```shell
   # On Linux and macOS
-  ./build.sh
+  ./recipes/build.sh
   # on Windows
-  .\bld.bat
+  .\recipes\bld.bat
   ```
 * Finally, you can run Corvo, by issueing `corvo` on the command line. Enjoy 👍
 
 ## Installation via conda (experimental)
 
-Corvo can also be installed via conda directly. This skips the need for the build process outlined above. Run the following commands:
+[![Anaconda-Server Badge](https://anaconda.org/skalarproduktraum/corvo/badges/version.svg)](https://anaconda.org/skalarproduktraum/corvo) [![Anaconda-Server Badge](https://anaconda.org/skalarproduktraum/corvo/badges/platforms.svg)](https://anaconda.org/skalarproduktraum/corvo)
+
+Corvo can also be installed via conda directly. You can see the availability of packages for different platforms in the badges above. This skips the need for the build process outlined above. Run the following commands:
 ```shell
 conda install -c skalarproduktraum corvo
 ```
@@ -57,6 +59,6 @@ Afterwards, you can run Corvo by issueing `corvo` on the command line.
 
 You can also create your own custom conda package, by running the following command in the directory of this repository:
 ```shell
-conda-build .
+conda-build ./recipes -c conda-forge
 ```
 This requires `conda-build` to be installed and will build a conda package for the architecture you're currently running on.
